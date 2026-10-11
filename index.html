@@ -1,0 +1,1602 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Карьерный навигатор IT: выберите профессию, оцените навыки и получите план до первой работы.">
+  <title>Карьерный навигатор IT</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101522'/%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 10l6 6-6 6' stroke='%237090FF' stroke-width='3.4'/%3E%3Cpath d='M18.5 22h5' stroke='%23fff' stroke-width='3.4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <style>
+/* Карьерный навигатор IT — стили.
+   Сетка: шапка, колонка контента до 1120px, карта тем с боковой панелью.
+   Синий — навигация и действия, янтарный — «вы здесь». Цвета задаются переменными ниже. */
+:root{
+  --bg:#E8ECF3; --surface:#FFFFFF; --sunk:#DDE3EC; --ink:#0D1220; --muted:#465065; --line:#C8D0DD;
+  --accent:#2446C8; --accent-ink:#FFFFFF; --accent-soft:#DCE4FB;
+  --amber:#D98A07; --amber-soft:#FCF1DC; --good:#1D8657; --good-soft:#E1F3EA; --bad:#C23E2C; --bad-soft:#FBE7E3; --gap:#D4952F; --gap-soft:#FBF0DC;
+  --shadow:0 1px 2px rgba(13,18,32,.08),0 8px 24px rgba(13,18,32,.08);
+  --spine:#2B78E4; --rec:#7C3AED; --alt:#16A34A; --opt:#9CA3AF; --rm-main:#FCE38A; --rm-main-line:#E6C65A; --rm-main-ink:#1F1A08;
+  --tile:var(--surface); --card-sh:0 1px 2px rgba(13,18,32,.05),0 4px 16px rgba(13,18,32,.05);
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E121A; --surface:#161C27; --sunk:#1C2330; --ink:#E6E9F0; --muted:#97A0B2; --line:#283041;
+  --accent:#7090FF; --accent-ink:#0B1020; --spine:#5B9BF0; --rec:#A78BFA; --alt:#4ADE80; --opt:#6B7280; --accent-soft:#1D2744; --rm-main:#EBCB62; --rm-main-line:#EBCB62; --rm-main-ink:#1A1404; --rm-main:#EBCB62; --rm-main-line:#EBCB62; --rm-main-ink:#1A1404;
+  --amber:#F0B13A; --amber-soft:#33280F; --good:#4CC28E; --good-soft:#12291F; --bad:#F06D5B; --bad-soft:#331815; --gap:#E3B866; --gap-soft:#2E2716;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); --tile:var(--bg); --card-sh:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E121A; --surface:#161C27; --sunk:#1C2330; --ink:#E6E9F0; --muted:#97A0B2; --line:#283041;
+  --accent:#7090FF; --accent-ink:#0B1020; --spine:#5B9BF0; --rec:#A78BFA; --alt:#4ADE80; --opt:#6B7280; --accent-soft:#1D2744;
+  --amber:#F0B13A; --amber-soft:#33280F; --good:#4CC28E; --good-soft:#12291F; --bad:#F06D5B; --bad-soft:#331815; --gap:#E3B866; --gap-soft:#2E2716;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); --tile:var(--bg); --card-sh:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.2;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(26px,3.4vw,40px)} h2{font-size:22px} h3{font-size:16px}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* шапка */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;min-height:62px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--ink);text-decoration:none;cursor:pointer;background:none;border:0;padding:0}
+.logo svg{flex:none}
+.logo{gap:12px;font-size:17px;letter-spacing:-.01em}
+.logo-mark{width:38px;height:38px;flex:none;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#5B86FF,#2A4FD4 60%,#5B3FD0);box-shadow:0 6px 16px -6px rgba(42,79,212,.7),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s}
+.logo:hover .logo-mark{transform:rotate(-6deg) scale(1.05)}
+.logo-t b{color:var(--accent);font-weight:700}
+.logo-mark svg{width:24px;height:24px}
+.logo-mark.lm-plain{background:none;box-shadow:none;border:2px solid var(--accent)}
+@media (max-width:520px){.logo{font-size:15px}.logo-mark{width:32px;height:32px;border-radius:9px}}
+.nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav button{background:none;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:500}
+.nav button:hover{color:var(--ink);background:var(--sunk)}
+.nav button.on{color:var(--ink);background:var(--sunk)}
+.nav .cta{background:var(--accent);color:var(--accent-ink)}
+.nav .cta:hover{background:var(--accent);color:var(--accent-ink);filter:brightness(1.08)}
+.nav .theme{display:grid;place-items:center;width:38px;padding:8px 0}
+.nav .theme svg{display:block}
+
+/* кнопки */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;border:1px solid transparent;cursor:pointer;font-weight:600;text-decoration:none;white-space:nowrap}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn.link{background:none;padding:0;color:var(--accent);font-weight:500}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.sm{padding:7px 12px;font-size:14px;border-radius:8px}
+
+main{padding-block:36px 56px;min-height:60vh}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.page-head p{margin-top:8px;max-width:62ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}
+
+/* формы */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600}
+.field .hint{font-size:12px;color:var(--muted)}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=date],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+textarea{min-height:96px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{margin-top:3px;accent-color:var(--accent)}
+.err{color:var(--bad);font-size:13px}
+[aria-invalid]{border-color:var(--bad)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--surface)}
+.opt:hover{border-color:var(--muted)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{accent-color:var(--accent)}
+
+/* метки и значки */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.gap{background:var(--gap-soft);color:var(--gap)}
+.chip.amber{background:var(--amber-soft);color:var(--amber)}
+.chip.accent{background:var(--accent-soft);color:var(--accent)}
+.stub-note{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;display:inline-block}
+.btn.lg{padding:14px 22px;font-size:16px;border-radius:12px}
+.btn .arr{transition:transform .15s}
+.btn:hover .arr{transform:translateX(3px)}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.section{margin-top:72px}
+@media (max-width:960px){ .steps{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:520px){ .steps{grid-template-columns:minmax(0,1fr)} }
+
+/* главная, исходный вариант */
+.o-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:40px;align-items:stretch;padding-block:8px 8px}
+.o-copy{display:flex;flex-direction:column}
+.o-copy > .row{margin-bottom:32px}
+.o-hero p.lead{font-size:18px;color:var(--muted);margin-top:16px;max-width:52ch}
+.o-copy > .row{margin-top:28px}
+.o-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:auto 0 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.o-facts > div{padding:18px 20px;display:flex;flex-direction:column;gap:4px}
+.o-facts > div + div{border-left:1px solid var(--line)}
+.o-facts dt{font-family:var(--f-display);font-size:24px;font-weight:600;color:var(--accent);letter-spacing:-.01em}
+.o-facts dd{margin:0;font-size:13px;color:var(--muted)}
+.o-contact{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.o-contact-info{display:flex;flex-direction:column;gap:22px;padding:28px;border-right:1px solid var(--line)}
+.o-contacts{margin:0;display:flex;flex-direction:column}
+.o-contacts > div{display:flex;justify-content:space-between;gap:12px;padding-block:10px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.o-contacts dt{color:var(--muted)}
+.o-contacts dd{margin:0;font-weight:500}
+.o-form{padding:28px}
+.o-social{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:auto}
+.o-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.o-form textarea{min-height:84px}
+@media (max-width:900px){
+  .o-hero,.o-contact{grid-template-columns:minmax(0,1fr)}
+  .o-contact-info{border-right:0;border-bottom:1px solid var(--line)}
+}
+@media (max-width:520px){ .o-form-row,.o-facts{grid-template-columns:minmax(0,1fr)} .o-facts > div + div{border-left:0;border-top:1px solid var(--line)} }
+
+.o-how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.o-how-step{display:flex;flex-direction:column;gap:10px;align-items:stretch;padding:24px;border:0;background:none;text-align:left;cursor:pointer;color:inherit;transition:background .15s}
+.o-how-step + .o-how-step{border-left:1px solid var(--line)}
+.o-how-step:hover{background:var(--sunk)}
+.o-how-n{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.04em}
+.o-how-step p{color:var(--muted);font-size:14px}
+.o-how-prev{margin-top:auto;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-height:64px;display:flex;flex-direction:column;justify-content:center}
+.o-how-go{color:var(--accent);font-weight:600;font-size:14px}
+@media (max-width:900px){ .o-how{grid-template-columns:repeat(2,minmax(0,1fr))} .o-how-step:nth-child(3){border-left:0} .o-how-step:nth-child(n+3){border-top:1px solid var(--line)} }
+@media (max-width:520px){ .o-how{grid-template-columns:minmax(0,1fr)} .o-how-step + .o-how-step{border-left:0;border-top:1px solid var(--line)} }
+/* отчёт о разрыве */
+.meter{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.ring{--p:46;width:132px;height:132px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--sunk) 0);display:grid;place-items:center;flex:none}
+.ring b{width:100px;height:100px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--f-display);font-size:28px;font-weight:600}
+.skills{display:flex;flex-direction:column}
+.skill{display:grid;grid-template-columns:minmax(0,1fr) 140px 48px;gap:12px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.skill:last-child{border-bottom:0}
+.skill .pct{text-align:right;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.skill.have .meter i{background:var(--good)}
+.skill.miss .meter i{background:var(--accent)}
+.locked{position:relative}
+.locked .blur{filter:blur(5px);pointer-events:none;user-select:none;opacity:.7}
+.locked .over{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.locked .over > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 22px;box-shadow:var(--shadow);max-width:320px}
+
+/* каталог */
+.pcard{display:flex;flex-direction:column;gap:14px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-align:left;cursor:pointer;position:relative}
+.pcard:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.pcard.stub{cursor:default;opacity:.62}
+.pcard.stub:hover{border-color:var(--line);box-shadow:none}
+.pcard .top-r{display:flex;gap:6px;flex-wrap:wrap;min-height:22px}
+.pc-stats{margin:auto 0 0;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:baseline;border-top:1px solid var(--line);padding-top:14px}
+.pc-stats dt{font-size:13.5px;color:var(--muted)}
+.pc-stats dd{margin:0;text-align:right;font-family:var(--f-mono);font-size:15px;font-weight:600;white-space:nowrap}
+.pc-stats small{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted)}
+.pc-go{font-size:14px;font-weight:600;color:var(--accent)}
+.rm-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.rm{position:relative;margin:0 auto}
+.rm svg{position:absolute;inset:0;pointer-events:none}
+.node{position:absolute;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 14px;border-radius:10px;cursor:pointer;font-weight:500;text-align:center;line-height:1.2;font-size:13.5px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);box-shadow:0 1px 2px rgba(15,23,42,.06);transition:border-color .15s,box-shadow .15s,transform .15s}
+.node:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,23,42,.10)}
+.node.main{background:var(--rm-main);border-color:var(--rm-main-line);color:var(--rm-main-ink);font-size:15px;font-weight:600}
+.node.main:hover{border-color:var(--rm-main-ink)}
+.node.proj{background:var(--accent-soft);border:1.5px dashed var(--accent);color:var(--ink);font-weight:600}
+.node.optn{border-style:dashed;color:var(--muted);background:transparent;box-shadow:none}
+.node.sel{box-shadow:0 0 0 3px var(--accent)}
+.node.done{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.node.known{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.node.current{background:var(--amber);border-color:var(--amber);color:#1A1200;font-weight:600;box-shadow:0 0 0 4px var(--amber-soft)}
+.node.skip{background:transparent;border-style:dashed;border-color:var(--line);color:var(--muted);box-shadow:none}
+.mk{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;border:2px solid var(--surface)}
+.mk svg{display:block}
+.mk.static{position:static;display:inline-grid;width:18px;height:18px;border:0;vertical-align:-4px;margin-right:6px}
+.mk.rec{background:var(--rec)} .mk.alt{background:var(--alt)} .mk.opt{background:var(--surface);color:var(--muted);border-color:var(--bg);box-shadow:inset 0 0 0 1.5px var(--muted)}
+.mk.opt.static{box-shadow:inset 0 0 0 1.5px var(--muted)}
+.legend .lg-opt{width:22px;border:1.5px dashed var(--muted);vertical-align:-3px;margin-right:6px}
+.rm-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:14px}
+.res{display:flex;flex-direction:column;gap:6px}
+.res a{display:flex;gap:8px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);text-decoration:none;font-size:14px;flex-wrap:wrap}
+.res a:hover{border-color:var(--accent)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend > span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;border:1.5px solid}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);z-index:40;padding:28px 24px calc(84px + env(safe-area-inset-bottom,0px));overflow:auto;display:flex;flex-direction:column;gap:18px;transform:translateX(100%);transition:transform .22s ease}
+.drawer.open{transform:none}
+.drawer .x{position:absolute;top:16px;right:16px;background:var(--sunk);border:0;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px}
+.drawer ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.banner{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-radius:12px;margin-bottom:20px}
+.banner.frozen{background:var(--sunk);border:1px dashed var(--muted)}
+.banner.info{background:var(--accent-soft)}
+
+/* тест */
+.quiz{max-width:640px;margin:0 auto}
+.progress{display:flex;gap:6px;margin-bottom:24px}
+.progress i{flex:1;height:4px;border-radius:9px;background:var(--line)}
+.progress i.on{background:var(--accent)}
+
+/* план */
+.timeline{display:flex;flex-direction:column}
+.tl{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:14px;align-items:start;padding-block:14px;border-bottom:1px solid var(--line)}
+.tl:last-child{border-bottom:0}
+.tl .dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:12px;font-weight:600;background:var(--sunk);color:var(--muted)}
+.tl.cur .dot{background:var(--amber);color:#1A1200}
+.tl.proj .dot{background:var(--accent-soft);color:var(--accent)}
+.tl .h{font-family:var(--f-mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.warn{background:var(--amber-soft);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:14px;display:flex;gap:10px}
+.warn b{color:var(--amber)}
+.stat{display:flex;flex-direction:column;gap:4px}
+.stat b{font-family:var(--f-display);font-size:26px;font-weight:600}
+.stat span{font-size:13px;color:var(--muted)}
+
+/* подписка */
+.tier{display:flex;flex-direction:column;gap:18px}
+.tier.pro{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.tier .price{font-family:var(--f-display);font-size:34px;font-weight:600}
+.tier ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.tier li{display:flex;gap:10px}
+.tier li::before{content:"✓";color:var(--good);font-weight:700}
+.tier li.no{color:var(--muted)}
+.tier li.no::before{content:"—";color:var(--muted)}
+
+/* вход и регистрация */
+.auth{max-width:440px;margin:0 auto}
+.tabs{display:flex;background:var(--sunk);border-radius:10px;padding:4px;margin-bottom:22px}
+.tabs button{flex:1;border:0;background:none;padding:9px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+footer{border-top:1px solid var(--line);padding-block:32px;background:var(--surface)}
+footer .wrap{font-size:14px}
+.f-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:32px 64px}
+.f-brand{display:flex;flex-direction:column;gap:12px;max-width:340px}
+.f-col{display:flex;flex-direction:column;gap:8px}
+.f-col .eyebrow{margin-bottom:4px}
+.f-links{display:flex;flex-direction:column;gap:8px;white-space:nowrap}
+.f-bottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (max-width:1000px){.f-grid{grid-template-columns:repeat(3,auto);justify-content:start}.f-brand{grid-column:1/-1}}
+@media (max-width:720px){.f-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.f-links{white-space:normal}}
+@media (max-width:560px){.f-grid,.f-links{grid-template-columns:minmax(0,1fr)}.f-links{white-space:normal}}
+footer button{background:none;border:0;padding:0;color:var(--muted);cursor:pointer;text-align:left}
+footer button:hover{color:var(--ink)}
+
+/* документы: политика, соглашение, согласие */
+.doc{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start}
+.doc-nav{position:sticky;top:90px;display:flex;flex-direction:column;gap:2px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.doc-nav .eyebrow{margin-bottom:8px}
+.doc-nav button{display:flex;gap:10px;align-items:baseline;background:none;border:0;padding:7px 0;text-align:left;cursor:pointer;color:var(--muted);font-size:14px;line-height:1.35}
+.doc-nav button::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;border:2px solid currentColor;transform:translateY(-1px)}
+.doc-nav button:hover{color:var(--ink)}
+.doc-nav button.on{color:var(--accent);font-weight:600}
+.doc-body{max-width:760px;padding:32px 36px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.doc-body h1{font-size:clamp(24px,3vw,32px)}
+.doc-body .doc-date{font-size:13px;margin:8px 0 8px;color:var(--muted)}
+.doc-body section{margin-top:22px}
+.doc-body h2{font-size:17px;margin-bottom:8px}
+.doc-body p,.doc-body li{color:var(--ink);line-height:1.65}
+.doc-body p + p{margin-top:8px}
+.doc-body ul{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.doc-body a{color:var(--accent)}
+.doc-body .stub-note{margin-top:28px}
+.fill{background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:0 5px;font-size:.93em;white-space:nowrap}
+footer a{color:var(--ink);text-decoration:none}
+footer a:hover{color:var(--accent)}
+.f-info button{display:flex;gap:9px;align-items:baseline}
+.f-info button::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;border:2px solid var(--accent);transform:translateY(-1px)}
+.cookie{position:fixed;left:0;right:0;bottom:0;z-index:55;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(8px);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.cookie-in{max-width:1080px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13.5px}
+.cookie p{color:var(--muted);line-height:1.45}
+.cookie a{color:var(--accent)}
+body.has-cookie{padding-bottom:130px}
+@media (max-width:820px){.doc{grid-template-columns:minmax(0,1fr)}.doc-nav{position:static}.doc-body{padding:22px 18px}.cookie-in{gap:12px}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(76px + env(safe-area-inset-top,0px));z-index:70;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+
+@media (max-width:820px){
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .skill{grid-template-columns:minmax(0,1fr) 80px 44px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* иллюстрация на главной */
+.o-art{position:relative;min-height:470px;isolation:isolate}
+.o-art::before{content:"";position:absolute;inset:4% 2%;z-index:-1;border-radius:32px;background:radial-gradient(60% 60% at 60% 45%,var(--accent-soft) 0%,transparent 70%)}
+.o-art::after{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--line) 1.2px,transparent 1.2px);background-size:20px 20px;-webkit-mask-image:radial-gradient(closest-side,#000 30%,transparent);mask-image:radial-gradient(closest-side,#000 30%,transparent);opacity:.8}
+.art-b{position:absolute;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:12px;font-weight:600;background:var(--surface);border:1px solid var(--line);color:var(--accent);box-shadow:0 8px 20px rgba(19,25,38,.10);animation:artF 6s ease-in-out infinite}
+.art-b.b1{right:30%;top:0;background:#F7DF1E;border-color:#E5CC10;color:#1A1A1A;animation-delay:-1s}
+@keyframes artF{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.o-art *{animation:none!important}}
+@media (max-width:900px){.o-art{min-height:440px;max-width:560px;width:100%;margin-inline:auto}}
+@media (max-width:640px){.o-art{display:none}}
+
+/* изометрические иллюстрации */
+:root{--iso1:#FFFFFF;--iso2:#D3DCF2;--iso3:#B4C2E6;--iso-edge:rgba(42,79,212,.28);--iso-scr:#16203A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--iso1:#2C3652;--iso2:#212A40;--iso3:#171E30;--iso-edge:rgba(112,144,255,.22);--iso-scr:#0B101C}}
+:root[data-theme="dark"]{--iso1:#2C3652;--iso2:#212A40;--iso3:#171E30;--iso-edge:rgba(112,144,255,.22);--iso-scr:#0B101C}
+.iso-art{display:flex;align-items:center;justify-content:center}
+.iso-art::after{display:none}
+.iso-art::before{inset:0 -4%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 16%,transparent),transparent)}
+.iso{width:100%;max-height:460px;overflow:visible;filter:drop-shadow(0 24px 30px rgba(19,25,38,.14))}
+.iso-art .iso{width:116%;max-height:none;flex:none;filter:drop-shadow(0 30px 40px rgba(42,79,212,.18))}
+.iso polygon{stroke:var(--iso-edge);stroke-width:.8;stroke-linejoin:round}
+.iso .s.t{fill:var(--iso1)} .iso .s.l{fill:var(--iso2)} .iso .s.r{fill:var(--iso3)}
+.iso .a.t{fill:var(--accent)} .iso .a.l{fill:color-mix(in srgb,var(--accent) 80%,#000)} .iso .a.r{fill:color-mix(in srgb,var(--accent) 64%,#000)}
+.iso .k.t{fill:color-mix(in srgb,var(--accent) 55%,var(--iso1))} .iso .k.l{fill:color-mix(in srgb,var(--accent) 60%,var(--iso2))} .iso .k.r{fill:color-mix(in srgb,var(--accent) 62%,var(--iso3))}
+.iso .g.t{fill:var(--good)} .iso .g.l{fill:color-mix(in srgb,var(--good) 80%,#000)} .iso .g.r{fill:color-mix(in srgb,var(--good) 64%,#000)}
+.iso .y.t{fill:var(--rm-main)} .iso .y.l{fill:color-mix(in srgb,var(--rm-main) 82%,#000)} .iso .y.r{fill:color-mix(in srgb,var(--rm-main) 66%,#000)}
+.iso .key{fill:var(--iso3);stroke:none} .iso .pad{fill:var(--iso2);stroke:none}
+.iso .scr{fill:var(--iso-scr);stroke:none}
+:root[data-theme="dark"] .iso .scr{fill:#0E1320}
+.iso .ln{stroke:none} .iso .ln.a{fill:#7090FF} .iso .ln.k{fill:color-mix(in srgb,var(--accent) 45%,transparent)} .iso .ln.m{fill:rgba(255,255,255,.14)} .iso .ln.g{fill:#4CC28E}
+.iso .it{font-family:var(--f-mono);font-size:11px;font-weight:600;fill:var(--muted)}
+.iso .it.on{fill:#fff}
+.iso .pole{stroke:var(--muted);stroke-width:2}
+.iso .flag{fill:var(--accent)}
+.iso path.k.l{fill:color-mix(in srgb,var(--accent) 40%,var(--iso2))} .iso path.a.l{fill:color-mix(in srgb,var(--accent) 80%,#000)} .iso path.s.l{fill:var(--iso2)}
+.iso path,.iso ellipse.t{stroke:var(--iso-edge);stroke-width:.8}
+.iso .trk{fill:rgba(255,255,255,.12);stroke:none}
+.iso-art .iso{width:100%;max-height:none;flex:none}
+.iso .a.t{fill:url(#isoAT)} .iso .a.l{fill:url(#isoAL)} .iso .a.r{fill:url(#isoAR)}
+.iso .g.t{fill:url(#isoGT)} .iso .y.t{fill:url(#isoYT)}
+.iso .scr{fill:url(#isoScr)}
+.iso .route{fill:none;stroke:#8EA5FF;stroke-width:3;stroke-linecap:round;stroke-dasharray:1 9;animation:routeMove 1.6s linear infinite}
+.iso .route-glow{fill:none;stroke:#7090FF;stroke-width:8;stroke-linecap:round;opacity:.18;filter:url(#isoGlow)}
+.iso .flag{fill:url(#isoYT)} .iso .pole{stroke:#C9D2E3}
+@keyframes routeMove{to{stroke-dashoffset:-28}}
+.iso-art .art-b.lg-js{background:#F7DF1E;border-color:#E5CC10;color:#1A1A1A}
+.iso-art .art-b.lg-ts{background:#3178C6;border-color:#3178C6;color:#fff}
+.iso-art .art-b.lg-re{background:#20232A;border-color:#20232A}
+.iso-art .art-b.lg-py,.iso-art .art-b.lg-sql{background:var(--surface)}
+.o-art.iso-art .art-b.b1{left:2%;right:auto;top:52%;bottom:auto}
+.o-art.iso-art .art-b{left:auto;right:auto;top:auto;bottom:auto;display:grid;place-items:center}
+.o-art.iso-art .art-b.t1{left:18%;top:7%;animation-delay:-0.7s}
+.o-art.iso-art .art-b.t2{left:30%;top:0;animation-delay:-1.4s}
+.o-art.iso-art .art-b.t3{left:2%;top:2%;animation-delay:-2.1s}
+.o-art.iso-art .art-b.t4{right:0;top:48%;animation-delay:-2.8s}
+.o-art.iso-art .art-b.t5{left:48%;top:8%;animation-delay:-3.5s}
+.o-art.iso-art .art-b.t6{right:2%;top:4%;animation-delay:-4.2s}
+.o-art.iso-art .art-b.t7{left:6%;bottom:8%;animation-delay:-4.9s}
+.o-art.iso-art .art-b.t8{right:0;bottom:8%;animation-delay:-5.6s}
+.o-art.iso-art .art-b.t9{right:28%;bottom:12%;animation-delay:-6.3s}
+.o-art.iso-art .art-b.t10{right:6%;top:70%;animation-delay:-7.0s}
+.o-art.iso-art .art-b.t11{left:26%;bottom:2%;animation-delay:-7.7s}
+.o-art.iso-art .art-b.t12{left:46%;bottom:4%;animation-delay:-8.4s}
+.o-art.iso-art .art-b.s1{width:52px;height:52px;font-size:14px}
+.o-art.iso-art .art-b.s2{width:44px;height:44px}
+.o-art.iso-art .art-b.s3{width:36px;height:36px;font-size:11px;opacity:.85}
+.iso-art .art-b.lg-html,.iso-art .art-b.lg-css,.iso-art .art-b.lg-node,.iso-art .art-b.lg-dock,.iso-art .art-b.lg-kt{background:var(--surface)}
+.iso-art .art-b.lg-go{background:#00ADD8;border-color:#00ADD8;color:#fff} .iso-art .art-b.lg-go b{font-family:var(--f-display);font-size:12px;font-style:italic}
+.iso-art .art-b.lg-git{background:var(--surface);color:var(--muted);font-weight:700}
+
+.iso .spark{fill:#fff;filter:url(#isoGlow)}
+.iso .tag rect{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.iso .tag text{font-family:var(--f-body);font-size:15px;font-weight:600;fill:var(--ink)}
+.iso .tag.done text{fill:var(--good)}
+.iso .tag.now rect{fill:var(--accent);stroke:var(--accent)} .iso .tag.now text{fill:var(--accent-ink)}
+.iso .tag.goal rect{fill:#F5C84C;stroke:#E6B53A} .iso .tag.goal text{fill:#1F1A08;font-size:16px}
+.o-art.iso-art{--mx:0;--my:0}
+.o-art.iso-art .iso{translate:calc(var(--mx)*-8px) calc(var(--my)*-6px);transition:translate .25s ease-out}
+.o-art.iso-art .art-b{transition:translate .25s ease-out}
+.o-art.iso-art .art-b.s1{translate:calc(var(--mx)*22px) calc(var(--my)*18px)}
+.o-art.iso-art .art-b.s2{translate:calc(var(--mx)*14px) calc(var(--my)*11px)}
+.o-art.iso-art .art-b.s3{translate:calc(var(--mx)*7px) calc(var(--my)*6px)}
+@media (prefers-reduced-motion:reduce){.o-art.iso-art .iso,.o-art.iso-art .art-b{translate:none!important}.iso .spark{display:none}}
+.iso-art .b1{left:8%;top:8%}
+@keyframes a3P{0%,100%{box-shadow:0 0 0 6px var(--accent-soft)}50%{box-shadow:0 0 0 12px var(--accent-soft)}}
+/* «Кем хотите стать», вариант 3 */
+.p3-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px}
+.p3-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface);text-align:left}
+.p3-n{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+.p3-card h3{font-size:22px}
+.p3-quiz{cursor:pointer;background:var(--accent-soft);border-color:transparent;transition:filter .15s}
+.p3-quiz:hover{filter:brightness(1.06)}
+.p3-card{padding:24px}
+.p3-quiz{position:relative;overflow:hidden}
+.p3-quiz::before{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-110px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 30%,transparent),transparent);pointer-events:none}
+.p3-quiz>*{position:relative}
+.qz-prev{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:6px;padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.qz-row{display:grid;grid-template-columns:28px minmax(0,1fr) 72px 34px;align-items:center;gap:10px;font-size:13px}
+.qz-n{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qz-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.qz-bar i{display:block;height:100%;width:var(--w);border-radius:3px;background:var(--accent);transform-origin:left;animation:qzFill 1.1s cubic-bezier(.2,.7,.2,1) var(--d) both}
+.qz-prev .qz-row:first-child .qz-bar i{background:linear-gradient(90deg,var(--accent),var(--rm-main-line))}
+.qz-p{font-size:12px;text-align:right;color:var(--muted)}
+.qz-prev .qz-row:first-child .qz-p{color:var(--accent);font-weight:600}
+.qz-foot{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto;padding-top:6px}
+.qz-btn{padding:10px 18px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:14px;transition:transform .15s}
+.p3-quiz:hover .qz-btn{transform:translateX(3px)}
+@keyframes qzFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.qz-bar i{animation:none}}
+.p3-quiz .qz-prev{gap:2px;padding:6px;flex:1;justify-content:space-around}
+.p3-quiz .qz-row{padding:8px 10px;font-size:14px}
+.qz{max-width:720px}
+.qz-top{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.qz-top .progress{flex:1;margin:0}
+.progress i.cur{background:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.qz-back{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:16px}
+.qz-back:disabled{opacity:.35;cursor:default}
+.qz-cnt{font-size:13px;min-width:32px;text-align:right}
+.qz-q{font-size:clamp(26px,3.4vw,36px);margin-bottom:24px}
+.qz-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qz-opt{display:flex;align-items:center;gap:14px;min-height:84px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:16px;font-weight:500;text-align:left;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.qz-opt:hover{border-color:var(--accent);transform:translateY(-2px)}
+.qz-opt.on{border-color:var(--accent);background:var(--accent-soft)}
+.qz-l{width:32px;height:32px;flex:none;border-radius:9px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
+.qz-opt.on .qz-l{background:var(--accent);color:var(--accent-ink)}
+.qz-hint{margin-top:18px;font-size:14px}
+.qr-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+.qr-main{display:flex;gap:28px;align-items:center;padding:28px;border-radius:16px;background:var(--accent-soft);position:relative;overflow:hidden}
+.qr-ring{--p:80;width:150px;height:150px;flex:none;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(closest-side,var(--accent-soft) 80%,transparent 81%),conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0)}
+.qr-ring b{font-family:var(--f-mono);font-size:32px;color:var(--accent)}
+.qr-ring span{font-size:12px;color:var(--muted)}
+.qr-body{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
+.qr-body .btn{white-space:normal;text-align:left}
+.qr-facts{display:flex;gap:24px;margin:4px 0 6px}
+.qr-facts span{display:flex;flex-direction:column;gap:2px}
+.qr-facts b{font-size:15px}
+.qr-facts i{font-style:normal;font-size:12px;color:var(--muted)}
+.qr-side{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.qr-alt{flex:1;justify-content:center;color:inherit;font:inherit;display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);text-align:left;cursor:pointer;transition:border-color .15s}
+.qr-alt:hover{border-color:var(--accent)}
+.qr-why{font-size:13px;padding-left:38px}
+@media (max-width:900px){.qr-grid{grid-template-columns:minmax(0,1fr)}.qr-main{flex-direction:column;align-items:flex-start}}
+@media (max-width:600px){.qz-opts{grid-template-columns:minmax(0,1fr)}.qz-opt{min-height:64px}}
+.pk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;margin-top:auto;padding-top:6px}
+.pk-t{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}
+.pk-t:hover{transform:translateY(-3px);border-color:var(--c2,var(--accent));box-shadow:0 10px 24px -12px var(--c2,var(--accent))}
+.pk-t b{font-size:14px;font-weight:600;margin-top:10px;line-height:1.25}
+.pk-t .mono{font-size:12px;color:var(--muted)}
+.pk-i{width:44px;height:44px;flex:none;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 6px 14px -6px var(--c2),inset 0 1px 0 rgba(255,255,255,.25)}
+.pk-i svg{width:22px;height:22px}
+.pk-i.sm{width:28px;height:28px;border-radius:8px;box-shadow:none}
+.pk-i.sm svg{width:15px;height:15px}
+.pk-more{border-style:dashed}
+.pk-more b,.pk-more .mono{color:var(--accent)}
+.pk-stack{display:flex;height:44px;align-items:center}
+.pk-stack .pk-i{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 3px var(--bg)}
+.pk-stack .pk-i+.pk-i{margin-left:-10px}
+.pk-stack .pk-i svg{width:16px;height:16px}
+@media (max-width:520px){.pk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* главная: блок «Кем хотите стать?» */
+.p3-wrap{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+.p3-wrap .p3-card{padding:22px 24px;gap:6px}
+.p3-wrap .p3-card h3{font-size:20px}
+.p3-wrap .p3-card>p{font-size:14px}
+.pk-grid{gap:8px;padding-top:10px}
+.pk-t{flex-direction:row;align-items:center;gap:10px;padding:10px 12px;border-radius:12px}
+.pk-tt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pk-t b{margin-top:0;font-size:13.5px;line-height:1.2}
+.pk-t{min-width:0}
+.pk-t .mono{font-size:11.5px}
+.pk-t .pk-i{width:34px;height:34px;border-radius:10px}
+.pk-t .pk-i svg{width:17px;height:17px}
+.pk-stack{height:34px}
+.pk-stack .pk-i{width:24px!important;height:24px!important}
+.pk-stack .pk-i+.pk-i{margin-left:-8px}
+.pk-stack .pk-i svg{width:12px!important;height:12px!important}
+.p3-quiz .qz-prev{flex:none;padding:4px}
+.p3-quiz .qz-row{padding:5px 8px}
+.qz-btn{padding:8px 16px}
+@media (max-width:1180px){.pk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.pk-grid{grid-template-columns:minmax(0,1fr)}}
+/* блок «Кем хотите стать?»: выравнивание двух карточек */
+.pk-t{background:var(--tile)}
+.pk-t:not(:hover){box-shadow:var(--card-sh)}
+.pk-more{background:transparent}
+.p3-wrap{grid-template-rows:auto auto;row-gap:0}
+.p3-wrap .p3-card.p3y{box-shadow:var(--card-sh);display:grid;grid-row:span 2;grid-template-rows:subgrid;row-gap:16px;align-items:stretch;padding:24px}
+.p3y .p3-h{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.p3y .p3-h h3{font-size:20px}
+.p3y .p3-p{font-size:14px;line-height:1.5}
+.p3y .pk-grid{margin:0;padding:0;height:100%;grid-auto-rows:1fr}
+.p3y .p3-b{display:flex;flex-direction:column;gap:12px;height:100%}
+.p3y .p3-b .qz-prev{margin:0;flex:1;justify-content:space-around}
+.p3y .qz-foot{margin:0;padding:0}
+.pk-more .pk-tt b{white-space:nowrap}
+@media (max-width:900px){.p3-wrap{grid-template-rows:none;row-gap:12px}.p3-wrap .p3-card.p3y{grid-row:auto;grid-template-rows:auto}}
+@media (max-width:900px){.p3-wrap{grid-template-columns:minmax(0,1fr)}}
+
+/* Служебные классы: небольшие отступы и размеры текста для отдельных мест.
+   С !important, чтобы они всегда перебивали общие стили компонентов. */
+.accent-check{accent-color:var(--accent)!important}
+.between{justify-content:space-between!important}
+.ff-body{font-family:var(--f-body)!important}
+.fs-12{font-size:12px!important}
+.fs-13{font-size:13px!important}
+.fs-14{font-size:14px!important}
+.fs-16{font-size:16px!important}
+.fs-20{font-size:20px!important}
+.fw-400{font-weight:400!important}
+.fw-500{font-weight:500!important}
+.gap-10{gap:10px!important}
+.gap-18{gap:18px!important}
+.gap-20{gap:20px!important}
+.gap-22{gap:22px!important}
+.gap-24{gap:24px!important}
+.gap-4{gap:4px!important}
+.gap-6{gap:6px!important}
+.gap-8{gap:8px!important}
+.grow{flex:1!important}
+.inline-flex{display:inline-flex!important}
+.items-center{align-items:center!important}
+.items-start{align-items:flex-start!important}
+.m-0{margin:0!important}
+.mb-14{margin-bottom:14px!important}
+.mb-18{margin-bottom:18px!important}
+.mb-20{margin-bottom:20px!important}
+.min-0{min-width:0!important}
+.mt-10{margin-top:10px!important}
+.mt-12{margin-top:12px!important}
+.mt-14{margin-top:14px!important}
+.mt-16{margin-top:16px!important}
+.mt-8{margin-top:8px!important}
+.mt-auto{margin-top:auto!important}
+.muted{color:var(--muted)!important}
+.no-wrap{white-space:nowrap!important}
+.nowrap{flex-wrap:nowrap!important}
+.pr-36{padding-right:36px!important}
+.px-16{padding-inline:16px!important}
+.mb-6{margin-bottom:6px!important} .mb-16{margin-bottom:16px!important} .mt-20{margin-top:20px!important} .gap-14{gap:14px!important} .gap-16{gap:16px!important} .fw-600{font-weight:600!important} .min-220{min-width:220px!important} .w-78{width:78%!important}
+
+/* Текст только для экранных дикторов */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+
+/* Отдельные элементы страниц */
+.fieldset-plain{border:0!important;padding:0!important;margin:0!important}
+.search-field{width:min(320px,100%)!important}
+.sw-known{background:var(--good-soft)!important;border-color:var(--good)!important}
+.sw-learn{background:var(--surface)!important;border-color:var(--line)!important}
+.sw-current{background:var(--amber)!important;border-color:var(--amber)!important}
+.cols-2{grid-template-columns:1fr 1fr!important}
+.cols-even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.cols-main-side{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)!important;align-items:start!important}
+.stat-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))!important}
+.align-start{align-items:start!important}
+.chip-btn{border:0!important;cursor:pointer!important}
+.narrow-panel{max-width:560px!important;margin:0 auto!important;align-items:flex-start!important}
+.big-badge{width:66px!important;height:66px!important;font-size:19px!important}
+.big-num{font-family:var(--f-display)!important;font-size:40px!important}
+.topic-card{text-align:left!important;cursor:pointer!important;border-color:var(--amber)!important}
+.accent-strong{color:var(--accent)!important;font-weight:600!important}
+.nf-wrap{align-items:center!important;text-align:center!important;padding-block:60px!important}
+.nf-code{font-size:72px!important;font-weight:600!important;color:var(--accent)!important}
+.ta-short{min-height:70px!important}
+.bar-good{background:var(--good)!important}
+.ring.ring-sm{width:88px!important;height:88px!important}
+.sent-box{padding-block:30px!important;align-items:flex-start!important}
+
+</style>
+  
+</head>
+<body>
+  <header class="top"><div class="wrap" id="topbar"></div></header>
+  <main><div class="wrap" id="app"></div></main>
+  <footer><div class="wrap" id="foot"></div></footer>
+  <div id="cookie"></div>
+  <div class="drawer" id="drawer" aria-hidden="true"></div>
+  <noscript><p class="wrap">Для работы сайта нужен включённый JavaScript.</p></noscript>
+<script>
+'use strict';
+
+/* ---------- данные: профессии, тест, карта тем, план ---------- */
+const PROFESSIONS = [
+  {id:'frontend',t:'Frontend-разработчик',about:'Делает сайты и интерфейсы, которые видит пользователь.',sal:'90–120 тыс. ₽',vac:410,live:true},
+  {id:'backend',t:'Backend-разработчик',about:'Пишет серверную часть: данные, логику, API.',sal:'100–130 тыс. ₽',vac:380},
+  {id:'qa',t:'QA-инженер',about:'Проверяет, что продукт работает без ошибок.',sal:'70–90 тыс. ₽',vac:300},
+  {id:'uxui',t:'UX/UI-дизайнер',about:'Проектирует удобные и красивые интерфейсы.',sal:'70–100 тыс. ₽',vac:140},
+  {id:'data',t:'Аналитик данных',about:'Ищет ответы на вопросы бизнеса в данных.',sal:'80–110 тыс. ₽',vac:260},
+  {id:'sa',t:'Системный аналитик',about:'Переводит задачи бизнеса в требования для разработки.',sal:'90–120 тыс. ₽',vac:240},
+  {id:'python',t:'Python-разработчик',about:'Пишет сервисы, скрипты и автоматизацию на Python.',sal:'100–130 тыс. ₽',vac:290},
+  {id:'mobile',t:'Мобильный разработчик',about:'Делает приложения для iOS и Android.',sal:'110–140 тыс. ₽',vac:150},
+  {id:'devops',t:'DevOps-инженер',about:'Настраивает серверы, сборку и выкладку кода.',sal:'120–150 тыс. ₽',vac:170},
+  {id:'ds',t:'Data Scientist',about:'Строит модели машинного обучения.',sal:'110–140 тыс. ₽',vac:110},
+  {id:'aqa',t:'Инженер автотестирования',about:'Пишет код, который сам проверяет продукт.',sal:'90–120 тыс. ₽',vac:200},
+  {id:'pm',t:'Product-менеджер',about:'Отвечает за то, что и зачем делает команда.',sal:'100–140 тыс. ₽',vac:60},
+];
+const QUIZ_WHY = {
+  frontend:'Вам нравится сразу видеть результат и делать то, чем пользуются люди.',
+  backend:'Вам интересно, как всё устроено внутри, и вы любите спокойно разбираться в логике.',
+  qa:'Вы внимательны к деталям, любите порядок и доводите дело до конца.',
+  uxui:'Вы думаете о людях и хорошо чувствуете, что красиво и удобно.',
+  data:'Вам нравится находить закономерности в цифрах и делать выводы.',
+  sa:'Вы умеете объяснять сложное простыми словами и видите систему целиком.',
+  python:'Вы любите автоматизировать рутину и собирать полезные штуки своими руками.',
+  mobile:'Вам нравится делать то, что люди носят в кармане и открывают каждый день.',
+  devops:'Вы цените порядок и надёжность и любите, когда всё работает само.',
+  ds:'Вам легко даётся математика и интересно, как машина учится на данных.',
+  aqa:'Вы любите проверять и не любите повторять одно и то же руками.',
+  pm:'Вы любите договариваться, придумывать идеи и влиять на результат.'
+};
+const QUIZ_DEMO = ['frontend','uxui','qa'];
+function quizResult(){
+  const ans=state.quizAns||[], sc={}, mx={};
+  PROFESSIONS.forEach(p=>{sc[p.id]=0;mx[p.id]=0});
+  QUIZ.forEach((q,qi)=>{
+    PROFESSIONS.forEach(p=>{mx[p.id]+=Math.max(0,...q.o.map(o=>o.w[p.id]||0))});
+    const o=q.o[ans[qi]]; if(o) for(const k in o.w) sc[k]+=o.w[k];
+  });
+  return PROFESSIONS.map(p=>({id:p.id,pct:mx[p.id]?Math.round(38+60*sc[p.id]/mx[p.id]):0}))
+    .sort((a,b)=>b.pct-a.pct).slice(0,3);
+}
+const quizTop = () => state.quizDone ? quizResult().map(r=>r.id) : QUIZ_DEMO;
+
+/* Карта тем Frontend, структура по roadmap.sh/frontend. Метки: rec = рекомендуем, alt = альтернатива, opt = не обязательно для junior */
+const ROADMAP = [
+  {id:'internet',t:'Интернет',vac:58,subs:[['how-internet','Как работает интернет',40],['http','Что такое HTTP',55],['domain','Доменные имена',18,'opt'],['hosting','Что такое хостинг',20,'opt'],['dns','DNS и как он работает',22],['browsers','Как работают браузеры',44]]},
+  {id:'html',t:'HTML',vac:96,subs:[['html-basics','Основы HTML',96],['semantic','Семантическая разметка',63],['forms','Формы и валидация',57],['a11y','Доступность',31],['seo','Основы SEO',24,'opt']]},
+  {id:'css',t:'CSS',vac:95,subs:[['css-basics','Основы CSS',95],['layouts','Раскладка: Flexbox и Grid',82],['responsive','Адаптивная вёрстка',74]]},
+  {id:'proj1',t:'Проект: адаптивный лендинг',proj:true},
+  {id:'js',t:'JavaScript',vac:97,subs:[['js-basics','Синтаксис и основы',90],['js-dom','Работа с DOM',76],['js-fetch','Fetch API и асинхронность',71]]},
+  {id:'git',t:'Контроль версий',vac:81,subs:[['git-basics','Основы Git',81]]},
+  {id:'vcs-host',t:'Хостинг репозиториев',vac:52,subs:[['github','GitHub',52,'rec'],['gitlab','GitLab',21,'alt'],['bitbucket','Bitbucket',5,'opt']]},
+  {id:'pm',t:'Пакетные менеджеры',vac:45,subs:[['npm','npm',45,'rec'],['pnpm','pnpm',12,'alt'],['yarn','yarn',14,'alt']]},
+  {id:'proj-todo',t:'Проект: список задач на чистом JS',proj:true},
+  {id:'framework',t:'Выберите фреймворк',vac:88,subs:[['react','React',78,'rec'],['vue','Vue.js',26,'alt'],['angular','Angular',14,'alt'],['svelte','Svelte',3,'opt']]},
+  {id:'react-deep',t:'React подробно',vac:78,subs:[['hooks','Хуки',74],['router','React Router',49],['state','Управление состоянием',55]]},
+  {id:'modern-css',t:'Современный CSS',vac:50,subs:[['tailwind','Tailwind CSS',33,'rec'],['bem','Архитектура CSS: БЭМ',29],['sass','Sass',38,'alt'],['postcss','PostCSS',10,'opt']]},
+  {id:'build',t:'Сборка и линтеры',vac:47,subs:[['vite','Vite',42,'rec'],['webpack','Webpack',30,'alt'],['eslint','ESLint',35],['prettier','Prettier',28]]},
+  {id:'ts',t:'TypeScript',vac:61,mark:'rec',subs:[]},
+  {id:'proj2',t:'Пет-проект: SPA на React',proj:true},
+  {id:'test',t:'Тестирование',vac:34,subs:[['vitest','Vitest',20,'rec'],['jest','Jest',25,'alt'],['playwright','Playwright',12,'opt'],['cypress','Cypress',9,'opt']]},
+  {id:'security',t:'Основы веб-безопасности',vac:20,mark:'opt',subs:[['https','HTTPS',20],['cors','CORS',18],['csp','Content Security Policy',6,'opt'],['owasp','OWASP: главные риски',8,'opt']]},
+  {id:'perf',t:'Деплой и производительность',vac:29,subs:[['deploy','Деплой: Vercel / Netlify',24],['cwv','Core Web Vitals',19],['lighthouse','Lighthouse',15]]},
+];
+const MK_ICO = {rec:'<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.6 9.6 3.6"/></svg>',opt:'<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h6"/></svg>'}; MK_ICO.alt=MK_ICO.rec;
+const MARK_TXT = {rec:'Рекомендуем',alt:'Альтернатива',opt:'Не обязательно для junior'};
+const TOPICS = {};
+ROADMAP.forEach(m=>{TOPICS[m.id]={id:m.id,t:m.t,vac:m.vac||0,proj:!!m.proj,main:true,mark:m.mark};(m.subs||[]).forEach(s=>TOPICS[s[0]]={id:s[0],t:s[1],vac:s[2],mark:s[3],parent:m.id})});
+const DESC = {
+  internet:'Как устроен интернет: запрос и ответ, HTTP, домены, DNS, хостинг и браузер. База, без которой сложно понять, что происходит, когда открывается сайт.',
+  html:'Разметка страницы: теги, структура документа, формы, семантика и доступность. С HTML начинается любая вёрстка.',
+  css:'Оформление страницы: селекторы, каскад, блочная модель и современные способы раскладки.',
+  js:'Язык, на котором работает интерфейс: переменные, функции, объекты, работа со страницей и загрузка данных.',
+  git:'Система контроля версий: коммиты, ветки, слияние. Нужна в каждой команде.',
+  'vcs-host':'Сервисы для хранения кода и совместной работы: pull request, ревью кода, задачи.',
+  pm:'Как подключать чужие библиотеки к проекту и управлять их версиями.',
+  framework:'Фреймворк помогает собирать интерфейс из компонентов. Для junior в России чаще всего ищут React.',
+  'react-deep':'Всё, что спрашивают на собеседовании по React после основ: хуки, роутинг, состояние приложения.',
+  'modern-css':'Как писать стили в больших проектах: утилитарные классы, методологии и препроцессоры.',
+  build:'Инструменты, которые собирают проект для публикации и следят за качеством кода.',
+  ts:'Типизированный JavaScript. Помогает ловить ошибки до запуска и стал стандартом в коммерческой разработке.',
+  test:'Автоматические проверки кода: модульные тесты функций и компонентов, сквозные тесты в браузере.',
+  security:'Основные угрозы для сайтов и как от них защищаться. На junior-собеседованиях спрашивают редко.',
+  perf:'Как опубликовать проект и измерить скорость его загрузки.',
+  proj1:'Свёрстанная по макету адаптивная страница. Первый проект в портфолио.',
+  'proj-todo':'Приложение со списком задач на чистом JavaScript: добавление, удаление, фильтры, сохранение в браузере.',
+  proj2:'Одностраничное приложение на React с загрузкой данных из API. Главный проект портфолио.',
+};
+const PERSONAL = {
+  known:['internet','how-internet','http','domain','hosting','dns','browsers','html','html-basics','semantic','forms','css','css-basics','layouts','responsive','proj1','js-basics','js-dom','git','git-basics','vcs-host','github'],
+  current:'js-fetch'
+};
+const STATUS_TXT = {known:'Уже знаю',learn:'Изучить',current:'Текущий шаг',skip:'Не обязательно для junior'};
+const RES = id => {
+  const t = TOPICS[id];
+  if (t.proj) return [['Задание','Техническое задание проекта','RU',true],['Статья','Чек-лист готового проекта','RU',true],['Видео','Как оформить проект на GitHub','RU',true]];
+  return [['Статья','«'+t.t+'» — MDN Web Docs','RU',true],['Видео','Разбор темы, 20–40 минут','RU',true],['Статья','Официальная документация','EN',true],['Курс','Практика с проверкой заданий','RU',false]];
+};
+const HOURS = {};
+const PLAN = [
+  ['js-fetch','JavaScript: Fetch API и асинхронность',18],
+  ['a11y','Доступность',8],
+  ['npm','Пакетный менеджер npm',4],
+  ['proj-todo','Проект: список задач на чистом JS',16,'proj'],
+  ['react','React: компоненты и JSX',16],
+  ['hooks','React: хуки',18],
+  ['router','React Router',8],
+  ['state','Управление состоянием',12],
+  ['tailwind','Tailwind CSS',8],
+  ['vite','Сборка: Vite',6],
+  ['eslint','ESLint и Prettier',4],
+  ['ts','TypeScript',24],
+  ['proj2','Пет-проект: SPA на React',30,'proj'],
+  ['vitest','Тестирование: Vitest',14],
+  ['deploy','Деплой и Core Web Vitals',10],
+];
+PLAN.forEach(p=>HOURS[p[0]]=p[2]);
+const hoursOf = id => HOURS[id] || (TOPICS[id].main ? null : TOPICS[id].mark==='opt' ? 3 : 6);
+const GAP = {
+  match:46,
+  have:[['HTML и семантика',96],['CSS, Flexbox и Grid',95],['Git',81],['Адаптивная вёрстка',74],['Основы JavaScript',90]],
+  miss:[['JavaScript: Fetch API и асинхронность',71],['React',78],['TypeScript',61],['Управление состоянием',55],['Сборка (Vite / Webpack)',42],['Тестирование',34],['Доступность (a11y)',31]],
+};
+
+// Экранирование: всё, что ввёл человек, вставляем в HTML только через esc(),
+// иначе введённый в поле код выполнится на странице (XSS).
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+// Проверка полей формы. rules: [id поля, проверка значения, текст ошибки].
+// Ошибка показывается прямо под полем, первое неверное поле получает фокус.
+function validate(form, rules){
+  form.querySelectorAll('.err[data-for]').forEach(e => e.remove());
+  let first = null;
+  for (const [id, test, msg] of rules){
+    const el = document.getElementById(id);
+    const bad = !test(el.value.trim());
+    el.toggleAttribute('aria-invalid', bad);
+    if (bad){
+      el.insertAdjacentHTML('afterend', `<span class="err" data-for="${id}">${msg}</span>`);
+      first = first || el;
+    }
+  }
+  if (first) first.focus();
+  return !first;
+}
+
+/* ---------- состояние ---------- */
+// Всё, что сайт знает о человеке. Кнопки меняют эти поля, после чего страница
+// перерисовывается. Живёт только в открытой вкладке: после перезагрузки всё сбрасывается.
+const state = {
+  cookieOk: (() => { try { return localStorage.getItem('nav-cookie') === '1'; } catch (e) { return false; } })(),
+  auth: false,          // вошёл ли человек
+  sub: 'none',          // подписка: none — нет, active — есть, expired — закончилась
+  onboarded: false,     // заполнена ли анкета после регистрации
+  profession: null,     // выбранная профессия
+  assessed: false,      // пройдена ли оценка навыков
+  quizDone: false,      // пройден ли тест на профориентацию
+  quizStep: 0,          // номер вопроса в тесте
+  assessStep: 0,        // номер вопроса в оценке
+  returnTo: null,       // куда вернуть человека после входа
+  authTab: 'register',  // какая вкладка открыта на странице входа
+  learned: new Set(),   // темы, отмеченные как изученные
+  openTopic: null,      // тема, открытая в боковой панели карты
+  hours: 8,             // из анкеты: часов в неделю
+  deadline: '2027-03-01',
+  status: 'student',
+  name: 'Женя',
+  email: 'zhenya@example.ru',
+};
+
+// Роль считается из полей state: от неё зависят шапка, кнопки и доступ к страницам.
+function role() {
+  if (!state.auth) return 'guest';
+  if (state.sub === 'active') return 'sub';
+  if (state.sub === 'expired') return 'frozen';
+  return 'user';
+}
+
+/* ---------- страницы и переходы ---------- */
+
+// Имя страницы видно в адресе после #, например #pricing.
+const PAGE_TITLES = {
+  home: 'Главная', auth: 'Вход / регистрация', reset: 'Восстановление пароля',
+  onboarding: 'Онбординг', quiz: 'Профориентация', catalog: 'Каталог профессий',
+  roadmap: 'Карточка профессии', assess: 'Оценка навыков', report: 'Отчёт о разрыве',
+  pricing: 'Подписка', plan: 'Персональный план', cabinet: 'Личный кабинет',
+  profile: 'Профиль и настройки', policy: 'Политика конфиденциальности',
+  terms: 'Пользовательское соглашение', consent: 'Согласие на обработку ПД',
+  about: 'О проекте', notfound: 'Ошибка 404',
+};
+
+// Страницы, на которые без входа не пускают.
+const NEED_AUTH = ['onboarding', 'quiz', 'assess', 'report', 'plan', 'cabinet', 'profile'];
+
+let current = 'home';
+
+// Охранник: решает, можно ли открыть страницу, и если нельзя, куда отправить вместо неё.
+function guard(page) {
+  if (page === 'offer') return 'terms';      // старые адреса документов
+  if (page === 'cookies') return 'policy';
+  if (!PAGE_TITLES[page]) return 'notfound';
+  if (NEED_AUTH.includes(page) && !state.auth) {
+    state.returnTo = page;                   // после входа вернём сюда
+    return 'auth';
+  }
+  if ((page === 'auth' || page === 'reset') && state.auth) return 'cabinet';
+  if (page === 'plan' && role() === 'user') return 'pricing';
+  return page;
+}
+
+// Переход на страницу. Меняет адрес, а перерисовку запускает обработчик hashchange.
+function go(page, opts = {}) {
+  if (opts.authTab) state.authTab = opts.authTab;
+  if (page === 'auth' && current !== 'auth' && current !== 'reset') state.returnTo = current;
+  const target = guard(page);
+  if (target === 'auth' && page !== 'auth' && !state.returnTo) state.returnTo = page;
+  if ('#' + target === location.hash) render();
+  else location.hash = target;
+}
+window.addEventListener('hashchange', () => render());
+
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+/* ---------- шапка, футер, логотип ---------- */
+const LOGO_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7l5 5-5 5" stroke="var(--accent)" stroke-width="2.6"/><path d="M13 17h5" stroke="var(--ink)" stroke-width="2.6"/></svg>`;
+const logo = () => `<span class="logo-mark lm-plain" aria-hidden="true">${LOGO_SVG}</span>`;
+const ICO_SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const ICO_MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
+function isDark(){ const t=document.documentElement.dataset.theme; return t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+try { const t=localStorage.getItem('nav-theme'); if (t) document.documentElement.dataset.theme=t; } catch(e){}
+function topbar(){
+  const r = role();
+  const items = r==='guest'
+    ? [['catalog','Каталог профессий'],['pricing','Подписка'],['auth','Войти','cta']]
+    : [['catalog','Каталог профессий'],['plan','Мой план'],['pricing','Подписка'],['cabinet','Личный кабинет','cta']];
+  document.getElementById('topbar').innerHTML = `
+    <button class="logo" data-go="home">${logo()}<span class="logo-t">Карьерный навигатор&nbsp;<b>IT</b></span></button>
+    <nav class="nav"><button class="theme" data-act="theme" aria-label="${isDark()?'Светлая тема':'Тёмная тема'}" title="${isDark()?'Светлая тема':'Тёмная тема'}">${isDark()?ICO_SUN:ICO_MOON}</button>${items.map(([p,t,c])=>`<button data-go="${p}" ${p==='auth'?'data-tab="login"':''} class="${c||''} ${current===p?'on':''}">${t}</button>`).join('')}</nav>`;
+}
+function footer(){
+  document.getElementById('foot').innerHTML = `
+    <div class="f-grid">
+      <div class="f-brand">
+        <button class="logo" data-go="home">${logo()}<span class="logo-t">Карьерный навигатор&nbsp;<b>IT</b></span></button>
+        <p class="muted">Навигатор для тех, кто входит в IT: выберите профессию, узнайте свой уровень и учитесь по плану.</p>
+      </div>
+      <div class="f-col f-info"><span class="eyebrow">Сервис</span><div class="f-links"><button data-go="catalog">Каталог профессий</button><button data-act="toQuiz">Тест на профориентацию</button><button data-go="pricing">Подписка</button></div></div>
+      <div class="f-col f-info"><span class="eyebrow">Информация</span><div class="f-links">${DOC_NAV.filter(([id])=>id!=='consent').map(([id,t])=>`<button data-go="${id}">${t}</button>`).join('')}</div></div>
+      <div class="f-col"><span class="eyebrow">Контакты</span><a href="mailto:info@navigator-it.ru">info@navigator-it.ru</a><span>Telegram: @navigator_it</span><span class="muted">Пн–Пт, 10:00–19:00 (МСК)</span></div>
+    </div>
+    <div class="f-bottom"><span>© 2026 Карьерный навигатор IT</span><span>Данные о вакансиях обновляются раз в месяц</span></div>`;
+}
+/* ---------- общие кусочки страниц ---------- */
+const meter = (p,cls='') => `<div class="meter"><i style="width:${p}%"></i></div>`;
+function skillRows(list,kind){
+  return `<div class="skills">${list.map(([n,p])=>`<div class="skill ${kind}"><span>${n}</span>${meter(p)}<span class="pct">${p}%</span></div>`).join('')}</div>`;
+}
+function gapReport(full, compact){
+  const ring = `<div class="ring" style="--p:${GAP.match}"><b>${GAP.match}%</b></div>`;
+  const head = `<div class="row gap-24 items-center nowrap">${ring}
+    <div class="stack gap-6 min-0"><span class="eyebrow">Соответствие вакансиям</span><h3>Frontend-разработчик, junior</h3>
+    <p class="muted fs-14">Сравнили ваши ответы с требованиями ${'1 240'} вакансий за последние 3 месяца. Процент рядом с навыком показывает, в какой доле вакансий он встречается.</p></div></div>`;
+  if (full){
+    return `<div class="stack gap-24">${head}
+      <div class="grid2">
+        <div class="stack"><div class="row"><h3>Не хватает</h3><span class="chip gap">${GAP.miss.length}</span></div>${skillRows(GAP.miss,'miss')}</div>
+        <div class="stack"><div class="row"><h3>Уже есть</h3><span class="chip good">${GAP.have.length}</span></div>${skillRows(GAP.have,'have')}</div>
+      </div></div>`;
+  }
+  const top3 = [...GAP.miss].sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return `<div class="stack gap-24">${head}
+    <div class="stack"><div class="row"><h3>Топ-3 пробела</h3><span class="chip">краткий отчёт</span></div>${skillRows(top3,'miss')}</div>
+    ${compact?'':`<div class="locked"><div class="blur grid2">
+        <div class="stack"><h3>Не хватает</h3>${skillRows(GAP.miss.slice(3),'miss')}</div>
+        <div class="stack"><h3>Уже есть</h3>${skillRows(GAP.have,'have')}</div></div>
+      <div class="over"><div class="stack items-center"><b>Полный отчёт и план — в подписке</b><span class="muted fs-14">Все навыки, все пробелы и порядок, в котором их закрывать.</span><button class="btn primary" data-go="pricing">Получить персональный план</button></div></div></div>`}
+  </div>`;
+}
+
+/* ---------- страницы: каждая — функция, которая возвращает HTML ---------- */
+const pages = {};
+
+const HOW_PREV = [
+  `<div class="row gap-6"><span class="chip accent">Frontend</span><span class="chip">Backend</span><span class="chip">QA</span></div>`,
+  `<div class="stack gap-8"><span class="fs-13">Что выведет typeof null?</span><div class="progress m-0"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>`,
+  `<div class="row gap-10 nowrap"><b class="mono fs-20">46%</b><div class="grow">${'<div class="meter"><i class="w-78"></i></div>'}</div></div>`,
+  `<div class="stack gap-4 fs-13"><div class="row between"><span>Fetch API</span><span class="mono muted">18 ч</span></div><div class="row between"><span>React</span><span class="mono muted">16 ч</span></div></div>`,
+];
+
+const ISO_DEFS=`<defs>
+  <linearGradient id="isoAT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9DB4FF"/><stop offset="1" stop-color="#5B7CFA"/></linearGradient>
+  <linearGradient id="isoAL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F6EF0"/><stop offset="1" stop-color="#3550C8"/></linearGradient>
+  <linearGradient id="isoAR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A56D0"/><stop offset="1" stop-color="#263C9E"/></linearGradient>
+  <linearGradient id="isoGT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BE0B0"/><stop offset="1" stop-color="#3FB984"/></linearGradient>
+  <linearGradient id="isoYT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE9A0"/><stop offset="1" stop-color="#F5C84C"/></linearGradient>
+  <linearGradient id="isoScr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B2650"/><stop offset="1" stop-color="#0E1430"/></linearGradient>
+  <linearGradient id="isoRoute" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7090FF"/><stop offset=".6" stop-color="#9B8CFF"/><stop offset="1" stop-color="#F5C84C"/></linearGradient>
+  <radialGradient id="isoHalo"><stop offset="0" stop-color="#7090FF" stop-opacity=".55"/><stop offset="1" stop-color="#7090FF" stop-opacity="0"/></radialGradient>
+  <radialGradient id="isoHaloY"><stop offset="0" stop-color="#F5C84C" stop-opacity=".6"/><stop offset="1" stop-color="#F5C84C" stop-opacity="0"/></radialGradient>
+  <filter id="isoGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>`;
+const ISO = (()=>{
+  const C=0.866, P=(x,y,z)=>[(x-y)*C,(x+y)*0.5-z];
+  const extra=[];const pts=a=>a.map(p=>P(...p).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const scene=()=>{const out=[];const all=[];
+    const add=(svg,ps)=>{out.push(svg);ps&&ps.forEach(p=>all.push(P(...p)));};
+    const poly=(a,cls)=>add(`<polygon class="${cls}" points="${pts(a)}"/>`,a);
+    const box=(x,y,z,w,d,h,c)=>{
+      poly([[x,y+d,z],[x+w,y+d,z],[x+w,y+d,z+h],[x,y+d,z+h]],c+' l');
+      poly([[x+w,y,z],[x+w,y+d,z],[x+w,y+d,z+h],[x+w,y,z+h]],c+' r');
+      poly([[x,y,z+h],[x+w,y,z+h],[x+w,y+d,z+h],[x,y+d,z+h]],c+' t');};
+    const quadTop=(x,y,z,w,d,c)=>poly([[x,y,z],[x+w,y,z],[x+w,y+d,z],[x,y+d,z]],c);
+    const quadFront=(x,y,z,w,h,c)=>poly([[x,y,z],[x+w,y,z],[x+w,y,z+h],[x,y,z+h]],c); // плоскость y=const
+    const txtTop=(x,y,z,t,c='')=>{const [X,Y]=P(x,y,z);add(`<text class="it ${c}" transform="matrix(${C},0.5,${-C},0.5,${X.toFixed(1)},${Y.toFixed(1)})">${t}</text>`)};
+    const txtFront=(x,y,z,t,c='')=>{const [X,Y]=P(x,y,z);add(`<text class="it ${c}" transform="matrix(${C},0.5,0,1,${X.toFixed(1)},${Y.toFixed(1)})">${t}</text>`)};
+    const raw=(svg,ps)=>add(svg,ps);
+    const K1=1.2247,K2=0.7071;
+    const cyl=(x,y,z,r,h,c)=>{const [cx,cb]=P(x,y,z);const ct=cb-h,rx=r*K1,ry=r*K2;
+      add(`<path class="${c} l" d="M${(cx-rx).toFixed(1)},${cb.toFixed(1)} A${rx.toFixed(1)},${ry.toFixed(1)} 0 0 0 ${(cx+rx).toFixed(1)},${cb.toFixed(1)} L${(cx+rx).toFixed(1)},${ct.toFixed(1)} L${(cx-rx).toFixed(1)},${ct.toFixed(1)}Z"/><ellipse class="${c} t" cx="${cx.toFixed(1)}" cy="${ct.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"/>`,[[x-r,y,z],[x+r,y,z],[x,y+r,z],[x,y-r,z+h],[x-r,y,z+h],[x+r,y,z+h]]);};
+    const ell=(x,y,z,r,cls,extra='')=>{const [cx,cy]=P(x,y,z);add(`<ellipse class="${cls}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${(r*K1).toFixed(1)}" ry="${(r*K2).toFixed(1)}" ${extra}/>`,[[x-r,y,z],[x+r,y,z]]);};
+    const line=(a,b,cls)=>{const [x1,y1]=P(...a),[x2,y2]=P(...b);add(`<line class="${cls}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`,[a,b]);};
+    const done=(pad=16)=>{all.push(...extra.splice(0));const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);const x0=Math.min(...xs)-pad,y0=Math.min(...ys)-pad,w=Math.max(...xs)-x0+pad,h=Math.max(...ys)-y0+pad;
+      return `<svg class="iso" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}">${ISO_DEFS}${out.join('')}</svg>`;};
+    return {P,poly,box,quadTop,quadFront,txtTop,txtFront,raw,done,cyl,ell,line};};
+  // ноутбук с графиками
+  const route=()=>{const s=scene();
+    const halo=(x,y,z,r,id)=>{const [hx,hy]=P(x,y,z);s.raw(`<ellipse cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" rx="${r*1.25}" ry="${r*.75}" fill="url(#${id})"/>`);};
+    // карточка с графиком сзади слева
+    s.box(-150,-10,40,92,92,6,'s');
+    [[-138,2,30,'k'],[-114,2,56,'a'],[-90,2,40,'k'],[-138,36,20,'k'],[-114,36,70,'a'],[-90,36,46,'k']].sort((p,q)=>(p[0]+p[1])-(q[0]+q[1])).forEach(([x,y,h,c])=>s.box(x,y,46,16,16,h,c));
+    // ноутбук
+    s.box(0,60,0,220,150,8,'s');
+    for(let r=0;r<4;r++)for(let k=0;k<12;k++)s.quadTop(14+k*16.6,76+r*15,8.2,12.4,11,'key');
+    s.quadTop(80,140,8.2,70,40,'pad');
+    s.box(0,52,8,220,8,150,'s');
+    s.quadFront(8,60,15,204,136,'scr');
+    halo(110,60,90,90,'isoHalo');
+    s.quadFront(18,60.5,134,184,6,'ln m');s.quadFront(18,60.6,135,26,4,'ln a');
+    [[.92,'g'],[.8,'g'],[.48,'a'],[.3,'k'],[.18,'k']].forEach(([p,c],i)=>{const z=114-i*20;s.quadFront(18,60.6,z,11,11,'ln '+c);s.quadFront(36,60.6,z+3,112,6,'trk');s.quadFront(36,60.7,z+3,112*p,6,'ln '+c);});
+    [30,52,40,72,58].forEach((h,i)=>s.quadFront(160+i*9,60.6,26,6,h,'ln '+(i===3?'a':'k')));
+    // маршрут от экрана к цели: ровная линия, узлы на равном шаге
+    const A=[214,60,118],Bp=[318,-150,262],N=5;
+    const R=[...Array(N)].map((_,k)=>A.map((a,d)=>a+(Bp[d]-a)*k/(N-1)));
+    const pr=R.map(p=>P(...p));
+    s.raw(`<line class="route-glow" x1="${pr[0][0].toFixed(1)}" y1="${pr[0][1].toFixed(1)}" x2="${pr[N-1][0].toFixed(1)}" y2="${pr[N-1][1].toFixed(1)}"/>`,R);
+    for(let k=0;k<N-1;k++){const [x0,y0]=pr[k],[x1,y1]=pr[k+1];s.raw(`<line class="route" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}"/>`);}
+    const mp=`M${pr.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')}`;
+    s.raw(`<circle r="7" class="spark"><animateMotion dur="3.6s" repeatCount="indefinite" path="${mp}" keyPoints="0;1;1" keyTimes="0;.62;1" calcMode="linear"/><animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.06;.58;.68;1" dur="3.6s" repeatCount="indefinite"/></circle>`);
+    // узлы-навыки поверх линии
+    [[R[1],'g'],[R[2],'g'],[R[3],'a']].forEach(([[x,y,z],c])=>{if(c==='a')halo(x,y,z,30,'isoHalo');s.box(x-14,y-14,z-14,28,28,28,c);});
+    // цель
+    const [tx,ty,tz]=R[4];halo(tx,ty,tz+10,60,'isoHaloY');
+    s.box(tx-38,ty-38,tz-16,76,76,12,'s');
+    s.box(tx-16,ty-16,tz-4,32,32,36,'y');
+    const [fx,fy]=P(tx,ty,tz+32),[gx,gy]=P(tx,ty,tz+96);
+    s.raw(`<line class="pole" x1="${fx}" y1="${fy}" x2="${gx}" y2="${gy}"/><path class="flag" d="M${gx},${gy} q20,-5 42,8 q-20,10 -42,17z"/>`,[[tx,ty,tz+106]]);
+    // подписи-плашки над узлами (ровные, не наклонные)
+    const tag=(x,y,z,t,c)=>{const [lx,ly]=P(x,y,z);const w=t.length*9.2+28;s.raw(`<g class="tag ${c}" transform="translate(${(lx-w/2).toFixed(1)},${(ly-32).toFixed(1)})"><rect width="${w}" height="28" rx="14"/><text x="${w/2}" y="19" text-anchor="middle">${t}</text></g>`,[[x,y,z+40]]);};
+    tag(R[1][0],R[1][1],R[1][2]+30,'HTML ✓','done');
+    tag(R[2][0],R[2][1],R[2][2]+30,'JS ✓','done');
+    tag(R[3][0],R[3][1],R[3][2]+30,'React','now');
+    {const [gx2,gy2]=P(tx,ty,tz-16);const w=88;s.raw(`<g class="tag goal" transform="translate(${(gx2+36).toFixed(1)},${(gy2-6).toFixed(1)})"><rect width="${w}" height="30" rx="15"/><text x="${w/2}" y="20" text-anchor="middle">Junior</text></g>`);const P2=P(tx,ty,tz-16);s.raw('',[]);extra.push([P2[0]+36+w+6,P2[1]-10],[P2[0]+36+w+6,P2[1]+30]);}
+    return s.done(10);};
+  return {route};
+})();
+function heroArt(){
+  const svg = ISO.route();
+  return `<div class="o-art iso-art" aria-hidden="true">
+      ${svg}
+      <span class="art-b t1 lg-js s1">JS</span><span class="art-b t2 lg-ts s1">TS</span><span class="art-b t3 lg-re s1"><svg viewBox="-12 -12 24 24" width="62%" height="62%"><g fill="none" stroke="#61DAFB" stroke-width="1.3"><ellipse rx="10" ry="4"/><ellipse rx="10" ry="4" transform="rotate(60)"/><ellipse rx="10" ry="4" transform="rotate(120)"/></g><circle r="2" fill="#61DAFB"/></svg></span><span class="art-b t4 lg-py s1"><svg viewBox="0 0 24 24" width="52%" height="52%"><path d="M11.9 2C7 2 7.3 4.1 7.3 4.1v2.2h4.7v.7H5.4S2 6.6 2 11.9s2.9 5.1 2.9 5.1h1.8v-2.5s-.1-2.9 2.9-2.9h4.9s2.8 0 2.8-2.7V4.5S17.7 2 11.9 2zM9.2 3.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z" fill="#3776AB"/><path d="M12.1 22c4.9 0 4.6-2.1 4.6-2.1v-2.2H12v-.7h6.6s3.4.4 3.4-4.9-2.9-5.1-2.9-5.1h-1.8v2.5s.1 2.9-2.9 2.9H9.5s-2.8 0-2.8 2.7v4.4S6.3 22 12.1 22zm2.7-1.6a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8z" fill="#FFD43B"/></svg></span><span class="art-b t5 lg-html s2"><svg viewBox="0 0 24 24" width="54%" height="54%"><path d="M3 2h18l-1.6 18L12 22l-7.4-2z" fill="#E8A33D"/><path d="M12 3.5v16.9l6-1.7 1.4-15.2z" fill="#F2B65A"/><text x="12" y="16" text-anchor="middle" font-family="Arial" font-weight="700" font-size="10" fill="#fff">5</text></svg></span><span class="art-b t6 lg-css s2"><svg viewBox="0 0 24 24" width="54%" height="54%"><path d="M3 2h18l-1.6 18L12 22l-7.4-2z" fill="#2965F1"/><path d="M12 3.5v16.9l6-1.7 1.4-15.2z" fill="#3B82F6"/><text x="12" y="16" text-anchor="middle" font-family="Arial" font-weight="700" font-size="10" fill="#fff">3</text></svg></span><span class="art-b t7 lg-node s2"><svg viewBox="0 0 24 24" width="56%" height="56%"><path d="M12 1.8l8.8 5.1v10.2L12 22.2l-8.8-5.1V6.9z" fill="#5FA04E"/><text x="12" y="15.6" text-anchor="middle" font-family="Arial" font-weight="700" font-size="8" fill="#fff">JS</text></svg></span><span class="art-b t8 lg-dock s2"><svg viewBox="0 0 24 24" width="60%" height="60%"><g fill="#2496ED"><rect x="3" y="10" width="3.2" height="3" rx=".4"/><rect x="6.8" y="10" width="3.2" height="3" rx=".4"/><rect x="10.6" y="10" width="3.2" height="3" rx=".4"/><rect x="6.8" y="6.5" width="3.2" height="3" rx=".4"/><rect x="10.6" y="6.5" width="3.2" height="3" rx=".4"/><rect x="10.6" y="3" width="3.2" height="3" rx=".4"/><rect x="14.4" y="10" width="3.2" height="3" rx=".4"/><path d="M1.5 14h19.6c.9-1.2 1.9-1.6 2.4-1.5-.4-1.3-1.6-1.8-2.6-1.6-.3-1.2-1.2-2-1.2-2s-1.2 1.2-.9 3.1H1.5c-.3 4.4 3 7.2 8.6 7.2 6 0 9.5-2.6 11-5.2"/></g></svg></span><span class="art-b t9 lg-go s3"><b>GO</b></span><span class="art-b t10 lg-kt s3"><svg viewBox="0 0 24 24" width="50%" height="50%"><defs><linearGradient id="ktG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7F52FF"/><stop offset=".5" stop-color="#C711E1"/><stop offset="1" stop-color="#E9A23B"/></linearGradient></defs><path d="M2 2h20L12 12l10 10H2z" fill="url(#ktG)"/></svg></span><span class="art-b t11 lg-sql s3">SQL</span><span class="art-b t12 lg-git s3">git</span>
+    </div>`;
+}
+const PROF_SVG = {frontend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M13.5 5l-3 14"/></svg>',backend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>',qa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>',uxui:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19 7-7 3 3-7 7zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><path d="m2 2 7.6 7.6"/><circle cx="11" cy="11" r="2"/></svg>',data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15v2M11 10v7M15 12v5M19 6v11"/></svg>',sa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>',python:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-4 0-4 2-4 3v2h4v1H6c-2 0-3 1.5-3 4s1 4 3 4h2v-3c0-1.5 1-2.5 2.5-2.5h3c1.5 0 2.5-1 2.5-2.5V6c0-1.5-1.5-3-4-3z"/><path d="M12 21c4 0 4-2 4-3v-2h-4v-1h6c2 0 3-1.5 3-4"/></svg>',mobile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>',devops:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8a4 4 0 1 0 0 8c3 0 7-8 10-8a4 4 0 1 1 0 8c-3 0-7-8-10-8z"/></svg>',ds:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/></svg>',aqa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 14 8-14 8z"/></svg>',pm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>'};
+const PROF_CLR = {frontend:['#5B86FF','#2A4FD4'],backend:['#9A7BFF','#5B3FD0'],qa:['#3DD39A','#119068'],uxui:['#FFC15A','#E0891C'],data:['#38CFE3','#1590AA'],sa:['#7C8CFF','#4553C9'],python:['#4FA3FF','#2766C9'],mobile:['#8C98B4','#55607C'],devops:['#2FD1C5','#14988F'],ds:['#B98BFF','#7E4BDB'],aqa:['#56D17A','#2A9A4B'],pm:['#F6B04D','#C97B12']};
+function professionBlock(){
+  return `<section class="section">
+    <h2>Кем хотите стать?</h2>
+    <div class="p3-wrap">
+      <div class="p3-card p3-pick p3y">
+        <div class="p3-h"><span class="p3-n">Уже знаю</span><h3>Выберите профессию</h3><span class="muted p3-p">Откроем карту навыков и требования работодателей.</span></div>
+        <div class="pk-grid">${PROFESSIONS.slice(0,5).map(p=>`<button class="pk-t" data-act="pickProf" data-id="${p.id}" style="--c1:${PROF_CLR[p.id][0]};--c2:${PROF_CLR[p.id][1]}"><span class="pk-i">${PROF_SVG[p.id]}</span><span class="pk-tt"><b>${p.t}</b><span class="mono">${p.sal}</span></span></button>`).join('')}<button class="pk-t pk-more" data-go="catalog"><span class="pk-stack">${PROFESSIONS.slice(5,9).map(p=>`<span class="pk-i" style="--c1:${PROF_CLR[p.id][0]};--c2:${PROF_CLR[p.id][1]}">${PROF_SVG[p.id]}</span>`).join('')}</span><span class="pk-tt"><b>Ещё ${PROFESSIONS.length-5}</b><span class="mono">каталог →</span></span></button></div>
+      </div>
+      <button class="p3-card p3-quiz p3y" data-act="toQuiz">
+        <span class="p3-h"><span class="p3-n">Пока не знаю</span><h3>Пройдите тест</h3><span class="muted p3-p">${QUIZ.length} вопросов, и подберём профессию под вас.</span></span>
+        <span class="p3-b"><span class="qz-prev">${QUIZ_DEMO.map((id,i)=>{const p=PROFESSIONS.find(x=>x.id===id);const m=[92,84,76][i];return `<span class="qz-row" style="--w:${m}%;--d:${i*.15}s"><span class="pk-i sm" style="--c1:${PROF_CLR[id][0]};--c2:${PROF_CLR[id][1]}">${PROF_SVG[id]}</span><span class="qz-n">${p.t}</span><span class="qz-bar"><i></i></span><span class="mono qz-p">${m}%</span></span>`}).join('')}</span>
+        <span class="qz-foot"><span class="qz-btn">Пройти тест →</span><span class="mono muted">≈ 2 минуты</span></span></span>
+      </button>
+    </div>
+  </section>`;
+}
+
+pages.home = () => {
+  const top3 = [...GAP.miss].sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const steps = [
+    ['Выберите профессию','Из каталога или по итогам теста на профориентацию, если ещё не определились.','catalog','Каталог'],
+    ['Оцените свои навыки','Около 10 минут вопросов по темам, которые встречаются в вакансиях.','assess','Пример оценки'],
+    ['Посмотрите отчёт','Процент соответствия вакансиям и навыки, которых не хватает.','report','Пример отчёта'],
+    ['Идите по плану','Порядок тем, часы на каждую и срок с учётом вашего свободного времени.','plan','Пример плана'],
+  ];
+  return `
+  <section class="o-hero">
+    <div class="o-copy">
+      <span class="eyebrow">Для студентов, выпускников и тех, кто меняет профессию</span>
+      <h1 class="mt-14">Узнайте, чего вам не хватает до первой работы в IT</h1>
+      <p class="lead">Выберите профессию, пройдите оценку навыков и сравните себя с требованиями реальных вакансий. Затем получите план: что учить, в каком порядке и сколько это займёт.</p>
+      <div class="row"><button class="btn primary lg" data-act="start">Начать бесплатно</button><button class="btn ghost lg" data-go="catalog">Каталог профессий</button></div>
+      <dl class="o-facts">
+        <div><dt>${PROFESSIONS.length}</dt><dd>профессий в IT</dd></div>
+        <div><dt>1&nbsp;240</dt><dd>вакансий изучено</dd></div>
+        <div><dt>≈10&nbsp;мин</dt><dd>на оценку навыков</dd></div>
+      </dl>
+    </div>
+    ${heroArt()}
+  </section>
+
+  ${professionBlock()}
+
+  <section class="section">
+    <h2>Как это работает</h2>
+    <p class="muted mt-8">Четыре шага от выбора профессии до плана. Нажмите на шаг, чтобы открыть пример экрана.</p>
+    <div class="o-how">${steps.map(([t,d,go,l],i)=>`
+      <button class="o-how-step" data-go="${go}">
+        <span class="o-how-n">Шаг ${i+1}</span>
+        <h3>${t}</h3><p>${d}</p>
+        <div class="o-how-prev">${HOW_PREV[i]}</div>
+        <span class="o-how-go">${l} →</span>
+      </button>`).join('')}
+    </div>
+  </section>
+
+  <section class="section o-contact">
+    <div class="o-contact-info">
+      <div class="stack gap-8"><h2>Остались вопросы?</h2><p class="muted">Напишите нам, ответим на почту в течение рабочего дня.</p></div>
+      <dl class="o-contacts">
+        <div><dt>Почта</dt><dd>info@navigator-it.ru</dd></div>
+        <div><dt>Telegram</dt><dd>@navigator_it</dd></div>
+        <div><dt>Часы работы</dt><dd>Пн–Пт, 10:00–19:00 (МСК)</dd></div>
+      </dl>
+      <div class="o-social"><span class="muted fs-14">Мы в соцсетях:</span><span class="chip">ВКонтакте</span><span class="chip">Telegram-канал</span></div>
+    </div>
+    <form class="stack o-form" id="fbForm" novalidate>
+      <div class="o-form-row">
+        <div class="field"><label for="fbName">Имя</label><input id="fbName" type="text" placeholder="Как к вам обращаться"></div>
+        <div class="field"><label for="fbMail">Почта</label><input id="fbMail" type="email" placeholder="you@example.ru"></div>
+      </div>
+      <div class="field"><label for="fbMsg">Сообщение</label><textarea id="fbMsg" placeholder="Ваш вопрос"></textarea></div>
+      <label class="check"><input type="checkbox" id="fbOk"><span>Даю <a href="#consent">согласие на обработку персональных данных</a> и принимаю <a href="#policy">политику конфиденциальности</a></span></label>
+      <span class="err" id="fbErr" hidden>Отметьте согласие на обработку персональных данных.</span>
+      <div><button class="btn primary" type="submit">Отправить</button></div>
+    </form>
+  </section>`;
+};
+
+
+pages.auth = () => {
+  const reg = state.authTab==='register';
+  return `<div class="auth">
+    <div class="tabs"><button data-act="tab" data-tab="register" class="${reg?'on':''}">Регистрация</button><button data-act="tab" data-tab="login" class="${!reg?'on':''}">Вход</button></div>
+    ${state.returnTo && state.returnTo!=='home' ? `<div class="banner info fs-14">Войдите, чтобы открыть «${PAGE_TITLES[state.returnTo]}». После входа вернём вас туда.</div>`:''}
+    ${reg ? `<form class="panel stack" id="regForm" novalidate>
+      <h2>Создать аккаунт</h2>
+      <div class="field"><label for="rLogin">Логин</label><input id="rLogin" type="text" value="zhenya"></div>
+      <div class="field"><label for="rMail">Почта</label><input id="rMail" type="email" value="zhenya@example.ru"></div>
+      <div class="field"><label for="rPass">Пароль</label><input id="rPass" type="password" value="password"></div>
+      <div class="field"><label for="rTel">Телефон <span class="muted fw-400">— необязательно</span></label><input id="rTel" type="tel" placeholder="+7 900 000-00-00"></div>
+      <label class="check"><input type="checkbox" id="rOk"><span>Принимаю <a href="#terms">пользовательское соглашение</a> и даю <a href="#consent">согласие на обработку персональных данных</a></span></label>
+      <span class="err" id="rErr" hidden>Без согласия на обработку данных зарегистрироваться нельзя.</span>
+      <button class="btn primary" type="submit">Зарегистрироваться</button>
+    </form>` : `<form class="panel stack" id="loginForm" novalidate>
+      <h2>Вход</h2>
+      <div class="field"><label for="lMail">Почта</label><input id="lMail" type="email" value="zhenya@example.ru"></div>
+      <div class="field"><label for="lPass">Пароль</label><input id="lPass" type="password" value="password"></div>
+      <div class="row between"><button class="btn primary" type="submit">Войти</button><button type="button" class="btn link" data-go="reset">Забыли пароль?</button></div>
+    </form>`}
+  </div>`;
+};
+
+pages.reset = () => `<div class="auth"><form class="panel stack" id="resetForm" novalidate>
+  <h2>Восстановление пароля</h2>
+  <p class="muted">Укажите почту, на которую регистрировались. Пришлём ссылку для смены пароля.</p>
+  <div class="field"><label for="rsMail">Почта</label><input id="rsMail" type="email" value="zhenya@example.ru"></div>
+  <div id="rsDone" class="chip good" hidden>Ссылка отправлена на почту</div>
+  <div class="row between"><button class="btn primary" type="submit">Отправить ссылку</button><button type="button" class="btn link" data-go="auth" data-tab="login">← Назад ко входу</button></div>
+</form></div>`;
+
+pages.onboarding = () => `<div class="quiz">
+  <div class="page-head"><div><span class="eyebrow">Онбординг</span><h1 class="mt-8">Расскажите о себе</h1><p class="muted">Ответы нужны, чтобы рассчитать персональный план. Их можно изменить в профиле.</p></div></div>
+  <form class="panel stack gap-22" id="onbForm" novalidate>
+    <fieldset class="field fieldset-plain"><label>Ваш статус</label><div class="opts">
+      ${[['student','Студент'],['grad','Выпускник'],['switch','Переквалификация (работаю в другой сфере)'],['other','Другое']].map(([v,t])=>`<label class="opt"><input type="radio" name="st" value="${v}" ${state.status===v?'checked':''}>${t}</label>`).join('')}
+    </div></fieldset>
+    <div class="field"><label for="obProf">Желаемая профессия</label>
+      <select id="obProf">${PROFESSIONS.map(p=>`<option value="${p.id}" ${p.id===(state.pickedProf||'frontend')?'selected':''}>${p.t}</option>`).join('')}<option value="unknown" ${state.pickedProf==='unknown'?'selected':''}>Не знаю, помогите выбрать</option></select>
+      <span class="hint">В прототипе карточка есть только у Frontend-разработчика.</span></div>
+    <div class="field"><label for="obHours">Сколько часов в неделю готовы уделять: <b class="mono" id="obHoursV">${state.hours}</b></label><input class="accent-check" id="obHours" type="range" min="2" max="30" value="${state.hours}"></div>
+    <div class="field"><label for="obDl">Когда хотите получить работу <span class="muted fw-400">— необязательно</span></label><input id="obDl" type="date" value="${esc(state.deadline)}"></div>
+    <div><button class="btn primary" type="submit">Продолжить</button></div>
+  </form></div>`;
+
+const QUIZ = [
+  {q:'Что вам интереснее всего?',o:[
+    {t:'Делать то, что видно: сайты и приложения',w:{frontend:3,mobile:2,uxui:1}},
+    {t:'Понимать, как всё устроено внутри',w:{backend:3,python:2,devops:2}},
+    {t:'Находить ошибки и доводить до идеала',w:{qa:3,aqa:2}},
+    {t:'Искать закономерности в цифрах',w:{data:3,ds:2,sa:1}}]},
+  {q:'Какой предмет в школе давался легче?',o:[
+    {t:'Математика',w:{ds:3,data:2,backend:1}},
+    {t:'Информатика',w:{backend:2,python:2,devops:1,aqa:1}},
+    {t:'Рисование или черчение',w:{uxui:3,frontend:1}},
+    {t:'Русский язык и литература',w:{sa:2,pm:2,qa:1}}]},
+  {q:'Что бы вы сделали с удовольствием?',o:[
+    {t:'Нарисовать макет приложения',w:{uxui:3,mobile:1}},
+    {t:'Собрать Telegram-бота',w:{python:3,backend:1}},
+    {t:'Построить график своих расходов',w:{data:3,ds:1}},
+    {t:'Сверстать страницу по картинке',w:{frontend:3}}]},
+  {q:'Какая роль в команде вам ближе?',o:[
+    {t:'Придумываю идею и договариваюсь со всеми',w:{pm:3,sa:1}},
+    {t:'Беру задачу и спокойно делаю сам',w:{backend:2,python:1,frontend:1,mobile:1}},
+    {t:'Проверяю, что всё сделано как надо',w:{qa:3,aqa:1}},
+    {t:'Объясняю сложное простыми словами',w:{sa:3,uxui:1}}]},
+  {q:'Как вы относитесь к рутине?',o:[
+    {t:'Люблю порядок и чек-листы',w:{qa:2,devops:2,aqa:1}},
+    {t:'Нормально, если вижу результат',w:{frontend:1,mobile:1,data:1}},
+    {t:'Не люблю и хочу её автоматизировать',w:{aqa:2,devops:2,python:2}},
+    {t:'Хочу каждый день новые задачи',w:{pm:2,ds:1,uxui:1}}]},
+  {q:'Если что-то сломалось, вы…',o:[
+    {t:'Ищу, в каком месте ошибка',w:{qa:2,backend:1,aqa:1}},
+    {t:'Пробую варианты, пока не заработает',w:{frontend:1,python:1,mobile:1}},
+    {t:'Смотрю логи и цифры',w:{devops:2,data:1,ds:1}},
+    {t:'Выясняю, кому и чем это мешает',w:{pm:1,sa:2,uxui:1}}]},
+  {q:'Что для вас важнее всего в первой работе?',o:[
+    {t:'Быстро войти в профессию',w:{qa:3,data:1,uxui:1}},
+    {t:'Хорошая зарплата в будущем',w:{devops:2,ds:2,backend:1,mobile:1}},
+    {t:'Видеть результат своей работы',w:{frontend:2,uxui:2,mobile:1}},
+    {t:'Влиять на продукт',w:{pm:3,sa:1}}]},
+];
+pages.quiz = () => {
+  if (state.quizStep >= QUIZ.length){
+    const r=quizResult(), [b1,...rest]=r, p1=PROFESSIONS.find(x=>x.id===b1.id);
+    return `<div class="qr">
+    <div class="page-head"><div><span class="eyebrow">Профориентация · результат</span><h1 class="mt-8">Вам больше всего подходит</h1></div>
+    <button class="btn ghost" data-act="quizRestart">Пройти заново</button></div>
+    <div class="qr-grid">
+      <div class="qr-main">
+        <div class="qr-ring" style="--p:${b1.pct}"><b>${b1.pct}%</b><span>совпадение</span></div>
+        <div class="qr-body">
+          <span class="pk-i" style="--c1:${PROF_CLR[p1.id][0]};--c2:${PROF_CLR[p1.id][1]}">${PROF_SVG[p1.id]}</span>
+          <h2>${p1.t}</h2>
+          <p class="muted">${QUIZ_WHY[p1.id]}</p>
+          <div class="qr-facts"><span><b class="mono">${p1.sal}</b><i>зарплата junior</i></span><span><b class="mono">${p1.vac}</b><i>вакансий сейчас</i></span></div>
+          ${p1.live?`<button class="btn primary" data-act="openProf" data-id="${p1.id}">Открыть карту навыков →</button>`:`<button class="btn ghost" data-act="allProf">Карта скоро · смотреть каталог</button>`}
+        </div>
+      </div>
+      <div class="qr-side"><span class="eyebrow">Тоже подойдут</span>
+      ${rest.map(x=>{const p=PROFESSIONS.find(y=>y.id===x.id);return `<button class="qr-alt" data-act="openProf" data-id="${p.id}">
+        <span class="qz-row" style="--w:${x.pct}%;--d:.2s"><span class="pk-i sm" style="--c1:${PROF_CLR[p.id][0]};--c2:${PROF_CLR[p.id][1]}">${PROF_SVG[p.id]}</span><span class="qz-n">${p.t}</span><span class="qz-bar"><i></i></span><span class="mono qz-p">${x.pct}%</span></span>
+        <span class="muted qr-why">${QUIZ_WHY[p.id]}</span></button>`}).join('')}
+      </div>
+    </div></div>`;
+  }
+  const q = QUIZ[state.quizStep], ans=(state.quizAns||[])[state.quizStep];
+  return `<div class="quiz qz">
+    <div class="qz-top"><button class="qz-back" data-act="quizBack" ${state.quizStep===0?'disabled':''} aria-label="Назад">←</button>
+    <div class="progress">${QUIZ.map((_,i)=>`<i class="${i<state.quizStep?'on':i===state.quizStep?'cur':''}"></i>`).join('')}</div>
+    <span class="mono muted qz-cnt">${state.quizStep+1}/${QUIZ.length}</span></div>
+    <h1 class="qz-q">${q.q}</h1>
+    <div class="qz-opts">${q.o.map((o,i)=>`<button class="qz-opt ${ans===i?'on':''}" data-act="quizAns" data-v="${i}"><span class="qz-l mono">${'АБВГ'[i]}</span>${o.t}</button>`).join('')}</div>
+    <p class="muted qz-hint">Отвечайте, как есть: правильных ответов нет.</p></div>`;
+};
+
+pages.catalog = () => {
+  const f = state.catFilter || 'all';
+  return `
+  <div class="page-head"><div><span class="eyebrow">Каталог</span><h1 class="mt-8">Профессии в IT</h1><p class="muted">Зарплата и число вакансий посчитаны для junior-специалистов. Цифры в прототипе примерные.</p></div></div>
+  <div class="row between mb-18">
+    <div class="tabs m-0 inline-flex">${[['all','Все'],['live','Доступные'],['soon','Скоро']].map(([v,t])=>`<button data-act="catFilter" data-v="${v}" class="${f===v?'on':''} px-16">${t}</button>`).join('')}</div>
+    <div class="field search-field"><label for="catSearch" class="sr-only">Поиск по названию</label><input id="catSearch" type="text" placeholder="Поиск по названию" value="${esc(state.catQuery||'')}"></div>
+  </div>
+  <div class="grid3" id="catGrid">${PROFESSIONS.filter(p=>f==='all'||(f==='live')===!!p.live).map(p=>{const fit=state.quizDone&&quizTop().includes(p.id);const mine=p.live&&role()==='sub'&&state.assessed;return `
+    <button class="pcard ${p.live?'':'stub'}" data-act="openProf" data-id="${p.id}" data-name="${p.t.toLowerCase()}">
+      <div class="top-r">${p.live?'<span class="chip good">Доступно</span>':'<span class="chip">Скоро</span>'}${fit?'<span class="chip accent">Вам подходит</span>':''}${mine?'<span class="chip amber">Мой план</span>':''}</div>
+      <div class="stack gap-6"><h3>${p.t}</h3><p class="muted fs-14">${p.about}</p></div>
+      <dl class="pc-stats"><dt>Зарплата</dt><dd>${p.sal}</dd><dt>Вакансии</dt><dd>${p.vac} <small>в месяц</small></dd></dl>
+      <span class="pc-go">${p.live?'Открыть карту →':'Сообщить о запуске'}</span>
+    </button>`}).join('')}</div>`;
+};
+
+function roadmapLayout(){
+  const W=960, MW=230, MX=(W-MW)/2, MH=50, SW=210, SX_L=24, SX_R=W-24-SW, SH=40, SG=10, PAD=40;
+  let y=PAD; const nodes=[], lines=[];
+  let prev=null;
+  ROADMAP.forEach(m=>{
+    const subs=m.subs||[]; const half=Math.ceil(subs.length/2);
+    const L=subs.slice(0,half), R=subs.slice(half);
+    const sideH = k => k? k*SH+(k-1)*SG : 0;
+    const rowH = Math.max(MH, sideH(L.length), sideH(R.length));
+    const my = y + (rowH-MH)/2;
+    nodes.push({id:m.id,x:MX,y:my,w:MW,h:MH,kind:m.proj?'proj':'main'});
+    if (prev) lines.push(`<path d="M${W/2} ${prev.y+prev.h} L${W/2} ${my}" stroke="var(--spine)" stroke-width="3" fill="none"/>`);
+    prev={y:my,h:MH};
+    [[L,SX_L,'L'],[R,SX_R,'R']].forEach(([arr,sx,side])=>{
+      let sy = y + (rowH-sideH(arr.length))/2;
+      arr.forEach(s=>{
+        nodes.push({id:s[0],x:sx,y:sy,w:SW,h:SH,kind:'sub'});
+        const x1 = side==='L'? MX : MX+MW, y1=my+MH/2, x2 = side==='L'? sx+SW : sx, y2=sy+SH/2, cx=(x1+x2)/2;
+        lines.push(`<path d="M${x1} ${y1} C${cx} ${y1} ${cx} ${y2} ${x2} ${y2}" stroke="var(--spine)" stroke-width="1.6" stroke-dasharray="1 5" stroke-linecap="round" fill="none"/>`);
+        sy += SH+SG;
+      });
+    });
+    y += rowH + 34;
+  });
+  return {W,H:y+PAD-34,nodes,lines};
+}
+const markOf = id => { const t=TOPICS[id]; return t.mark || (t.parent && TOPICS[t.parent].mark==='opt' ? 'opt' : null); };
+function topicStatus(id){
+  if (PERSONAL.current===id) return 'current';
+  if (PERSONAL.known.includes(id) || state.learned.has(id)) return 'known';
+  if (markOf(id)==='opt') return 'skip';
+  return 'learn';
+}
+function roadmapMode(){ const r=role(); return r==='sub'?'personal':r==='frozen'?'frozen':'base'; }
+function roadmapProgress(){
+  const all = Object.keys(TOPICS);
+  const done = roadmapMode()==='base' ? all.filter(id=>state.learned.has(id)).length : all.filter(id=>topicStatus(id)==='known').length;
+  return {done,total:all.length,pct:Math.round(done/all.length*100)};
+}
+pages.roadmap = () => {
+  const mode = roadmapMode();
+  const L = roadmapLayout();
+  const p = PROFESSIONS[0];
+  const pr = roadmapProgress();
+  const nodeHtml = L.nodes.map(n=>{
+    let cls = `node ${n.kind}`; const mk = TOPICS[n.id].mark;
+    if (mode==='base'){ if (state.learned.has(n.id)) cls+=' done'; else if (n.kind==='sub' && markOf(n.id)==='opt') cls+=' optn'; }
+    else { cls+=' '+topicStatus(n.id); if (mode==='frozen') cls+=' frozen'; }
+    if (state.openTopic===n.id) cls+=' sel';
+    const badge = mk && mk!=='opt' ? `<span class="mk ${mk}" title="${MARK_TXT[mk]}">${MK_ICO[mk]}</span>` : '';
+    return `<button class="${cls}" style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px" data-act="topic" data-id="${n.id}">${TOPICS[n.id].t}${badge}</button>`;
+  }).join('');
+  const modeChip = {base:'<span class="chip">Базовый режим</span>',personal:'<span class="chip amber">Персональный режим</span>',frozen:'<span class="chip">Только чтение</span>'}[mode];
+  const statusLegend = mode==='base' ? '' : `<span><i class="sw-known"></i>Уже знаю</span><span><i class="sw-learn"></i>Изучить</span><span><i class="sw-current"></i>Текущий шаг</span>`;
+  return `
+  ${mode==='frozen'?`<div class="banner frozen"><span><b>Подписка закончилась 1 октября.</b> Персональная карта сохранена и доступна только для чтения. Продлите подписку, чтобы продолжить.</span><button class="btn primary sm" data-act="buy">Продлить подписку</button></div>`:''}
+  <div class="page-head mb-18">
+    <div><div class="row"><span class="eyebrow">Карточка профессии</span>${modeChip}</div><h1 class="mt-8">Frontend-разработчик</h1>
+    <p class="muted">Кому подходит: тем, кто любит сразу видеть результат и делать удобные интерфейсы. ${mode==='base'?'Нажмите на тему, чтобы открыть описание и материалы.':'Карта построена по результатам вашей оценки навыков.'}</p>
+    <div class="row mt-12 gap-8"><span class="chip">Зарплата junior: <b class="mono">${p.sal}</b></span><span class="chip">Вакансий junior в месяц: <b class="mono">${p.vac}</b></span><span class="chip">Данные о вакансиях от 1 октября 2026</span></div></div>
+    <div class="row">${mode==='base'?`<button class="btn primary" data-act="toAssess">Узнать мои пробелы</button>`:`<button class="btn ghost" data-go="plan">Мой план</button>`}</div>
+  </div>
+  <div class="rm-bar">
+    <div class="row gap-10 nowrap grow min-220"><b class="mono fs-14">${pr.pct}%</b><div class="meter grow"><i class="bar-good" style="width:${pr.pct}%"></i></div><span class="muted mono fs-13 no-wrap">${pr.done} из ${pr.total} изучено</span></div>
+    ${!state.auth?'<span class="muted fs-13">Войдите, чтобы отмечать изученное</span>':''}
+  </div>
+  <div class="legend mb-14">
+    <span><span class="mk rec static">${MK_ICO.rec}</span>Рекомендуем</span><span><span class="mk alt static">${MK_ICO.alt}</span>Альтернатива</span><span><i class="lg-opt"></i>Не обязательно для junior</span>
+    ${statusLegend}
+  </div>
+  <div class="rm-scroll"><div class="rm" style="width:${L.W}px;height:${L.H}px">
+    <svg width="${L.W}" height="${L.H}" viewBox="0 0 ${L.W} ${L.H}" aria-hidden="true">${L.lines.join('')}</svg>${nodeHtml}
+  </div></div>
+  <p class="muted fs-13 mt-10">Структура карты по образцу roadmap.sh. Режим карты в прототипе зависит от переключателя «Смотреть как» внизу экрана.</p>`;
+};
+function openDrawer(id){
+  state.openTopic=id; const t=TOPICS[id]; const mode=roadmapMode(); const d=document.getElementById('drawer');
+  const st = mode==='base' ? null : topicStatus(id);
+  const parent = t.parent ? TOPICS[t.parent].t : null;
+  const done = mode==='base' ? state.learned.has(id) : st==='known';
+  const mk = markOf(id); const h = hoursOf(id);
+  const kids = t.main ? (ROADMAP.find(m=>m.id===id).subs||[]) : [];
+  d.innerHTML = `<button class="x" data-act="closeDrawer" aria-label="Закрыть">×</button>
+    <div class="stack gap-8 pr-36">${parent?`<span class="eyebrow">${parent}</span>`:`<span class="eyebrow">${t.proj?'Проект':'Тема'}</span>`}<h2>${t.t}</h2>
+    <div class="row gap-6">${st?`<span class="chip ${st==='known'?'good':st==='current'?'amber':''}">${STATUS_TXT[st]}</span>`:''}${mk&&st!=='skip'?`<span class="chip"><span class="mk ${mk} static">${MK_ICO[mk]}</span>${MARK_TXT[mk]}</span>`:''}${mode==='base'&&done?'<span class="chip good">Изучено</span>':''}</div></div>
+    <p>${DESC[id] || `Подтема раздела «${parent}». Здесь будет краткое описание: что это, зачем нужно на работе и на каком уровне это спрашивают на собеседовании.`}</p>
+    ${t.proj?'':`<div class="grid2 cols-2 gap-14">
+      <div class="stack gap-6"><span class="eyebrow">Нужен в вакансиях</span><div class="row nowrap gap-8"><div class="grow">${meter(t.vac)}</div><b class="mono">${t.vac}%</b></div></div>
+      <div class="stack gap-6"><span class="eyebrow">Время</span><b class="mono">${h?`≈ ${h} ч`:`${kids.length} подтем${kids.length===1?'а':kids.length<5?'ы':''}`}</b></div></div>`}
+    ${kids.length?`<div class="stack gap-6"><span class="eyebrow">Что входит</span><div class="row gap-6">${kids.map(k=>`<button class="chip chip-btn" data-act="topic" data-id="${k[0]}">${k[1]}</button>`).join('')}</div></div>`:''}
+    <div class="stack gap-8"><span class="eyebrow">Материалы для изучения</span>
+      <div class="res">${RES(id).map(([type,name,lang,free])=>`<a href="#roadmap" data-act="noop"><span class="chip accent">${type}</span><span class="grow min-0">${name}</span><span class="mono muted fs-12">${lang}</span>${free?'<span class="chip good">Бесплатно</span>':'<span class="chip">Платно</span>'}</a>`).join('')}</div></div>
+    <div class="stack gap-10 mt-auto">
+      ${mode==='frozen'?`<button class="btn ghost" disabled>${done?'Изучено ✓':'Изучено'}</button><span class="muted fs-13">Подписка закончилась, отметки недоступны. Продлите подписку, чтобы продолжить с этого места.</span>`
+       :`<button class="btn ${done?'ghost':'primary'}" data-act="learn" data-id="${id}">${done?'Изучено ✓ (снять отметку)':'Изучено'}</button>
+         ${!state.auth?'<span class="muted fs-13">Чтобы отметки сохранялись, нужно войти.</span>':''}`}
+      <div id="bugBox"><button class="btn link fs-13 muted" data-act="bug">Сообщить об ошибке в теме</button></div>
+    </div>`;
+  d.classList.add('open'); d.setAttribute('aria-hidden','false');
+  document.querySelectorAll('.node').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+}
+function closeDrawer(){ state.openTopic=null; const d=document.getElementById('drawer'); d.classList.remove('open'); d.setAttribute('aria-hidden','true'); document.querySelectorAll('.node.sel').forEach(n=>n.classList.remove('sel')); }
+
+const ASSESS = [
+  ['Как расположить блок по центру по горизонтали и вертикали с помощью Flexbox?',['justify-content: center; align-items: center','text-align: center; vertical-align: middle','margin: auto; float: center']],
+  ['Что выведет console.log(typeof null)?',['"object"','"null"','"undefined"']],
+  ['Как вы оцениваете свой опыт с React?',['Не работал(а)','Делал(а) учебные проекты','Использовал(а) в реальной работе']],
+];
+pages.assess = () => {
+  const [q,opts]=ASSESS[state.assessStep];
+  return `<div class="quiz">
+    <span class="eyebrow">Оценка навыков · Frontend-разработчик · вопрос ${state.assessStep+1} из ${ASSESS.length}</span>
+    <div class="progress mt-12">${ASSESS.map((_,i)=>`<i class="${i<=state.assessStep?'on':''}"></i>`).join('')}</div>
+    <div class="panel stack gap-18"><h2>${q}</h2>
+    <div class="opts">${opts.map((o,i)=>`<label class="opt"><input type="radio" name="a" ${i===0?'checked':''}><span class="fs-14 ${state.assessStep<2?'mono':''}">${o}</span></label>`).join('')}</div>
+    <div class="row between"><button class="btn ghost" data-act="assessBack" ${state.assessStep===0?'disabled':''}>Назад</button><button class="btn primary" data-act="assessNext">${state.assessStep===ASSESS.length-1?'Завершить и посмотреть отчёт':'Дальше'}</button></div>
+    <span class="stub-note">Примерные вопросы. Настоящий тест составим позже.</span></div></div>`;
+};
+
+pages.report = () => {
+  const full = role()==='sub';
+  if (!state.assessed) return `<div class="panel stack narrow-panel"><h2>Отчёта пока нет</h2><p class="muted">Пройдите оценку навыков, чтобы увидеть, чего не хватает до требований вакансий.</p><button class="btn primary" data-go="assess">Пройти оценку</button></div>`;
+  return `<div class="page-head"><div><span class="eyebrow">Отчёт о разрыве · ${full?'полный':'краткий'}</span><h1 class="mt-8">До требований вакансий не хватает ${100-GAP.match}%</h1></div>
+    ${full?`<button class="btn primary" data-go="plan">Открыть персональный план</button>`:`<button class="btn primary" data-go="pricing">Получить персональный план</button>`}</div>
+    <div class="panel">${gapReport(full)}</div>`;
+};
+
+pages.pricing = () => {
+  const r=role();
+  const btn = r==='sub' ? `<button class="btn ghost" disabled>Подписка активна</button>` : `<button class="btn primary" data-act="buy">${r==='frozen'?'Продлить за 250 ₽':'Купить за 250 ₽'}</button>`;
+  return `<div class="page-head"><div><span class="eyebrow">Подписка</span><h1 class="mt-8">Персональный план до первой работы</h1><p class="muted">Базовые инструменты бесплатны. Подписка нужна, чтобы получить полный разбор и план под ваше время и сроки.</p></div></div>
+  <div class="grid2">
+    <div class="panel tier"><div class="stack gap-6"><h3>Бесплатно</h3><span class="price">0 ₽</span></div>
+      <ul><li>Каталог профессий</li><li>Общая карта тем профессии</li><li>Отметки «Изучено» после входа</li><li>Профориентация</li><li>Оценка навыков и краткий отчёт: процент и топ-3 пробела</li>
+      <li class="no">Полный отчёт о разрыве</li><li class="no">Персональный план</li><li class="no">Персональная карта профессии</li></ul>
+      ${r==='guest'?`<button class="btn ghost" data-act="start">Зарегистрироваться</button>`:`<button class="btn ghost" disabled>Ваш текущий тариф</button>`}</div>
+    <div class="panel tier pro"><div class="stack gap-6"><div class="row"><h3>Подписка</h3><span class="chip accent">рекомендуем</span></div><span class="price">250 ₽ <span class="muted fs-16 ff-body fw-500">/ мес</span></span></div>
+      <ul><li>Всё из бесплатного тарифа</li><li>Полный отчёт о разрыве: все навыки и пробелы</li><li>Персональный план: порядок тем, часы, итоговый срок</li><li>Персональная карта профессии с текущим шагом</li><li>Сводка по рынку труда</li><li>Пересчёт плана после повторной оценки</li></ul>
+      ${btn}
+      <p class="muted fs-13">Нажимая «Купить», вы принимаете условия <a href="#terms">пользовательского соглашения</a>. Отменить подписку можно в профиле.</p></div>
+  </div>
+  <p class="stub-note mt-16">В прототипе оплаты нет: «Купить» сразу переводит дальше, как будто оплата прошла.</p>`;
+};
+
+function planCalc(){
+  const total = PLAN.reduce((s,p)=>s+p[2],0);
+  const weeks = Math.ceil(total / state.hours);
+  const end = new Date(); end.setDate(end.getDate()+weeks*7);
+  const dl = state.deadline ? new Date(state.deadline) : null;
+  return {total,weeks,end,dl,late: dl && end>dl};
+}
+const fmt = d => d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+pages.plan = () => {
+  const frozen = role()==='frozen'; const c=planCalc();
+  return `
+  ${frozen?`<div class="banner frozen"><span><b>Подписка закончилась 1 октября.</b> План сохранён и доступен только для чтения. После продления продолжите с того же места.</span><button class="btn primary sm" data-act="buy">Продлить подписку</button></div>`:''}
+  <div class="page-head"><div><span class="eyebrow">Персональный план</span><h1 class="mt-8">Frontend-разработчик, junior</h1></div>
+    <div class="row"><button class="btn ghost" data-go="roadmap">Открыть карту профессии</button><button class="btn ghost" data-go="assess" ${frozen?'disabled':''}>Пройти оценку заново / Обновить план</button></div></div>
+  <div class="grid2 stat-grid mb-20">
+    <div class="panel stat"><span>Всего учиться</span><b class="mono">${c.total} ч</b></div>
+    <div class="panel stat"><span>Ваш темп</span><b class="mono">${state.hours} ч/нед</b></div>
+    <div class="panel stat"><span>Итоговый срок</span><b>${c.weeks} нед.</b><span>до ${fmt(c.end)}</span></div>
+    <div class="panel stat"><span>Ваш дедлайн</span><b>${c.dl?c.dl.toLocaleDateString('ru-RU',{day:'numeric',month:'short'}):'не задан'}</b><span>${c.dl?c.dl.getFullYear():''}</span></div>
+  </div>
+  ${c.late?`<div class="warn mb-20"><b>!</b><span>При ${state.hours} ч в неделю вы не успеваете к дедлайну. Чтобы успеть, нужно около <b class="mono">${Math.ceil(c.total/Math.max(1,Math.floor((c.dl-new Date())/6048e5)))} ч</b> в неделю, либо сдвиньте дедлайн в <a href="#profile">профиле</a>.</span></div>`:''}
+  <div class="grid2 cols-main-side">
+    <div class="panel"><div class="row between mb-6"><h2>Что учить и в каком порядке</h2></div>
+      <div class="timeline">${PLAN.map(([id,t,h,k],i)=>{const cur=i===0;return `<div class="tl ${cur?'cur':''} ${k?'proj':''}"><span class="dot">${i+1}</span>
+        <div class="stack gap-4 min-0"><b>${t}</b><div class="row gap-6">${cur?'<span class="chip amber">Текущий шаг</span>':''}${k?'<span class="chip accent">Проект</span>':''}
+        ${TOPICS[id]&&!frozen?`<button class="btn link fs-13" data-act="openTopic" data-id="${id}">Открыть тему на карте</button>`:''}</div></div>
+        <span class="h">${h} ч</span></div>`}).join('')}</div></div>
+    <div class="stack gap-20">
+      <div class="panel"><h3 class="mb-16">Отчёт о разрыве</h3>${frozen?gapReport(false,true):`<div class="stack"><div class="row nowrap gap-16"><div class="ring ring-sm" style="--p:${GAP.match}"><b class="big-badge">${GAP.match}%</b></div><p class="muted fs-14">Соответствие требованиям вакансий. Закрыв план, выйдете на 85–90%.</p></div><button class="btn link" data-go="report">Открыть полный отчёт →</button></div>`}</div>
+      ${frozen?`<div class="panel stack"><h3>Сводка по рынку труда</h3><p class="muted fs-14">Недоступна после окончания подписки.</p></div>`:`<div class="panel stack"><h3>Сводка по рынку труда</h3>
+        <div class="grid2 cols-2 gap-14">
+          <div class="stat"><b class="mono fs-20">1 240</b><span>вакансий junior за 3 мес.</span></div>
+          <div class="stat"><b class="mono fs-20">+8%</b><span>к прошлому кварталу</span></div>
+          <div class="stat"><b class="mono fs-20">105 тыс.</b><span>медианная зарплата, ₽</span></div>
+          <div class="stat"><b class="mono fs-20">62%</b><span>допускают удалёнку</span></div>
+        </div><span class="stub-note">Цифры-заглушки</span></div>`}
+    </div>
+  </div>`;
+};
+
+pages.cabinet = () => {
+  const r=role(); const full=r==='sub';
+  const prog = Math.round(PERSONAL.known.length/Object.keys(TOPICS).length*100);
+  let main;
+  if (!state.onboarded) main = `<div class="panel stack items-start"><h2>Начнём с онбординга</h2><p class="muted">Ответьте на четыре вопроса, чтобы мы подобрали профессию и посчитали план.</p><button class="btn primary" data-go="onboarding">Пройти онбординг</button></div>`;
+  else if (!state.assessed) main = `<div class="panel stack items-start"><h2>Пройдите оценку навыков</h2><p class="muted">Покажем, сколько не хватает до требований вакансий Frontend-разработчика.</p><button class="btn primary" data-go="assess">Пройти оценку</button></div>`;
+  else main = `<div class="grid2 cols-even">
+      <div class="panel stack"><span class="eyebrow">Прогресс по плану</span><b class="mono big-num">${prog}%</b>${meter(prog)}<span class="muted fs-14">${PERSONAL.known.length} из ${Object.keys(TOPICS).length} тем изучено</span></div>
+      <button class="panel stack topic-card" data-act="openTopic" data-id="js-fetch"><span class="eyebrow">Текущий шаг</span><h2>JavaScript: Fetch API и асинхронность</h2><span class="muted fs-14">Промисы, async/await и загрузка данных с сервера. Около 18 часов.</span><span class="accent-strong">Открыть тему на карте →</span></button>
+    </div>
+    <div class="panel mt-20"><div class="row between mb-16"><h3>Отчёт о разрыве</h3><span class="chip">${full?'полный':'краткий'}</span></div>${gapReport(full)}</div>`;
+  return `
+  ${r==='frozen'?`<div class="banner frozen"><span><b>Подписка закончилась.</b> План и персональная карта доступны только для чтения.</span><button class="btn primary sm" data-act="buy">Продлить</button></div>`:''}
+  <div class="page-head"><div><span class="eyebrow">Личный кабинет</span><h1 class="mt-8">Здравствуйте, ${esc(state.name)}</h1></div>
+  <div class="row"><button class="btn ghost" data-go="plan">Персональный план</button><button class="btn ghost" data-go="profile">Профиль и настройки</button></div></div>
+  ${main}
+  <p class="muted fs-13 mt-16">В прототипе один активный план. В итоговой версии здесь будет список планов по нескольким профессиям.</p>`;
+};
+
+pages.profile = () => {
+  const r=role();
+  const subTxt = {sub:'<span class="chip good">Активна</span> до 8 ноября 2026, 250 ₽/мес',frozen:'<span class="chip">Закончилась 1 октября 2026</span>',user:'<span class="chip">Нет подписки</span>'}[r];
+  return `<div class="page-head"><div><button class="btn link" data-go="cabinet">← Личный кабинет</button><h1 class="mt-10">Профиль и настройки</h1></div></div>
+  <div class="grid2 align-start">
+    <form class="panel stack" id="profForm" novalidate><h3>Данные и ответы онбординга</h3>
+      <div class="field"><label for="pName">Имя</label><input id="pName" type="text" value="${esc(state.name)}"></div>
+      <div class="field"><label for="pMail">Почта</label><input id="pMail" type="email" value="${esc(state.email)}"></div>
+      <div class="field"><label for="pStatus">Статус</label><select id="pStatus">${[['student','Студент'],['grad','Выпускник'],['switch','Переквалификация'],['other','Другое']].map(([v,t])=>`<option value="${v}" ${state.status===v?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="field"><label for="pProf">Профессия</label><select id="pProf">${PROFESSIONS.map(p=>`<option ${p.id==='frontend'?'selected':''}>${p.t}</option>`).join('')}</select></div>
+      <div class="field"><label for="pHours">Часов в неделю</label><input id="pHours" type="text" inputmode="numeric" value="${state.hours}"></div>
+      <div class="field"><label for="pDl">Дедлайн</label><input id="pDl" type="date" value="${esc(state.deadline)}"></div>
+      <div><button class="btn primary" type="submit">Сохранить</button></div>
+    </form>
+    <div class="stack gap-20">
+      <div class="panel stack"><h3>Подписка</h3><p>${subTxt}</p>
+        <div id="cancelBox">${r==='sub'?`<button class="btn ghost" data-act="askCancel">Отменить подписку</button>`:`<button class="btn primary" data-act="buy">${r==='frozen'?'Продлить':'Оформить подписку'}</button>`}</div></div>
+      <form class="panel stack" id="pwForm" novalidate><h3>Смена пароля</h3>
+        <div class="field"><label for="pw1">Текущий пароль</label><input id="pw1" type="password"></div>
+        <div class="field"><label for="pw2">Новый пароль</label><input id="pw2" type="password"></div>
+        <div><button class="btn ghost" type="submit">Сменить пароль</button></div></form>
+      <div><button class="btn ghost" data-act="logout">Выйти из аккаунта</button></div>
+    </div>
+  </div>`;
+};
+
+// Документы
+const SITE = 'navigator-it.ru';
+const MAIL = 'info@navigator-it.ru';
+const DOCS = {
+  policy:{t:'Политика конфиденциальности', s:[
+    ['Общие положения',`<p>Эта политика объясняет, какие персональные данные собирает сервис «Карьерный навигатор IT» (сайт ${SITE}, далее — Сервис), зачем и как мы их защищаем. Политика составлена в соответствии с Федеральным законом № 152-ФЗ «О персональных данных».</p><p>По всем вопросам, связанным с персональными данными, пишите на ${MAIL}.</p>`],
+    ['Какие данные мы собираем',`<ul><li>При регистрации: имя или логин, адрес почты, номер телефона, пароль (хранится в зашифрованном виде).</li><li>При работе с Сервисом: выбранная профессия, ответы на тест профориентации и оценку навыков, отметки об изученных темах, свободное время для плана.</li><li>При оплате подписки: факт и дата оплаты. Данные банковской карты мы не получаем, их обрабатывает платёжный партнёр.</li><li>Технические данные: IP-адрес, тип браузера и устройства, файлы cookie, просмотренные страницы.</li></ul>`],
+    ['Зачем мы их обрабатываем',`<ul><li>Создать и вести ваш аккаунт.</li><li>Посчитать соответствие вакансиям, составить отчёт и персональный план.</li><li>Оформить и продлевать подписку.</li><li>Отвечать на обращения через форму и почту.</li><li>Улучшать Сервис по обезличенной статистике.</li></ul><p>Новостные рассылки отправляем только с вашего отдельного согласия, отписаться можно в любом письме.</p>`],
+    ['Правовые основания',`<p>Ваше <a href="#consent">согласие на обработку персональных данных</a> и <a href="#terms">пользовательское соглашение</a>, стороной которого вы являетесь.</p>`],
+    ['Передача третьим лицам',`<p>Мы не продаём и не передаём данные третьим лицам, кроме случаев, необходимых для работы Сервиса: хостинг-провайдер с серверами в России, платёжный партнёр для приёма оплаты, Яндекс Метрика для обезличенной статистики. Данные также могут быть переданы по законному запросу государственных органов.</p>`],
+    ['Файлы cookie',`<p>Cookie — небольшие файлы, которые сайт сохраняет в браузере. Мы используем:</p><ul><li><b>необходимые</b> — для входа в аккаунт, оплаты и сохранения прогресса;</li><li><b>настройки</b> — чтобы запомнить тему оформления и закрытое уведомление о cookie;</li><li><b>аналитические</b> — Яндекс Метрика собирает обезличенную статистику посещений.</li></ul><p>Рекламные cookie мы не используем. Cookie можно удалить или запретить в настройках браузера, но без необходимых cookie вход в аккаунт работать не будет. Продолжая пользоваться сайтом, вы соглашаетесь на использование cookie.</p>`],
+    ['Хранение и защита',`<p>Данные хранятся на серверах в России. Доступ к ним есть только у тех, кому он нужен для работы Сервиса. Соединение с сайтом зашифровано (HTTPS), пароли хранятся в виде хеша.</p><p>Данные хранятся, пока действует аккаунт. После удаления аккаунта мы удаляем их в течение 30 дней, кроме сведений, которые обязаны хранить по закону (например, об оплатах).</p>`],
+    ['Ваши права',`<p>Вы можете узнать, какие данные о вас хранятся, исправить их, отозвать согласие и удалить аккаунт. Удалить аккаунт можно в профиле или письмом на ${MAIL}. Мы ответим в течение 10 рабочих дней.</p>`],
+    ['Изменения политики',`<p>Новая редакция политики действует с момента публикации на этой странице. О существенных изменениях сообщим на почту.</p>`],
+  ]},
+  terms:{t:'Пользовательское соглашение', s:[
+    ['Общие положения',`<p>Соглашение регулирует отношения между сервисом «Карьерный навигатор IT» (сайт ${SITE}, далее — Сервис) и пользователем. Регистрируясь или пользуясь сайтом, вы принимаете условия соглашения.</p>`],
+    ['Что даёт Сервис',`<p>Бесплатно: каталог IT-профессий, карты тем, тест профориентации, оценка навыков и краткий отчёт. По подписке: полный отчёт о разрыве, персональный план, персональная карта и сводка по рынку.</p><p>Сервис помогает спланировать обучение, но не гарантирует трудоустройство. Данные о вакансиях и зарплатах носят справочный характер.</p>`],
+    ['Аккаунт',`<ul><li>Пользоваться Сервисом можно с 14 лет, до 18 лет — с согласия родителей.</li><li>Вы указываете достоверные данные и не передаёте доступ к аккаунту другим людям.</li><li>Вы отвечаете за действия, совершённые под вашим логином.</li></ul>`],
+    ['Подписка и оплата',`<p>Этот раздел является публичной офертой. Оплата подписки означает согласие с его условиями.</p><ul><li>Подписка стоит 250 ₽ в месяц. Оплата банковской картой или через СБП.</li><li>Подписка продлевается автоматически каждый месяц, пока вы её не отмените.</li><li>Отменить автопродление можно в профиле в любой момент. Доступ сохранится до конца оплаченного периода.</li><li>Вернуть деньги за неиспользованный период можно в течение 14 дней с даты оплаты, написав на ${MAIL}.</li><li>Кассовый чек с реквизитами продавца приходит на почту после каждой оплаты.</li></ul>`],
+    ['Что нельзя делать',`<ul><li>Копировать и распространять материалы сайта без разрешения.</li><li>Автоматически собирать данные с сайта.</li><li>Мешать работе Сервиса и пытаться получить доступ к чужим аккаунтам.</li></ul>`],
+    ['Права на материалы',`<p>Тексты, карты профессий, вопросы тестов и дизайн принадлежат Сервису или используются по лицензии. Вы можете пользоваться ими для собственного обучения.</p>`],
+    ['Ответственность',`<p>Мы стараемся, чтобы сайт работал без перебоев, но не отвечаем за временную недоступность из-за технических работ или причин вне нашего контроля.</p>`],
+    ['Блокировка и удаление',`<p>Мы можем ограничить доступ при нарушении соглашения. Вы можете удалить аккаунт в любой момент в профиле.</p>`],
+    ['Изменения и споры',`<p>Новая редакция соглашения действует с момента публикации на этой странице. Споры решаются переговорами, а если договориться не получилось — в суде по законодательству РФ. Связь: ${MAIL}.</p>`],
+  ]},
+  consent:{t:'Согласие на обработку персональных данных', s:[
+    ['',`<p>Регистрируясь на сайте ${SITE} или отправляя форму обратной связи, я свободно, своей волей и в своём интересе даю согласие сервису «Карьерный навигатор IT» на обработку моих персональных данных на следующих условиях.</p>`],
+    ['Какие данные',`<p>Имя или логин, адрес почты, номер телефона, ответы на тесты, сведения о навыках и прогрессе обучения, технические данные (IP-адрес, cookie, данные о браузере).</p>`],
+    ['Цели',`<p>Регистрация и ведение аккаунта, оценка навыков и составление персонального плана, оформление подписки, ответы на обращения, обезличенная статистика.</p>`],
+    ['Действия с данными',`<p>Сбор, запись, систематизация, хранение, уточнение, использование, передача (в случаях из <a href="#policy">политики конфиденциальности</a>), обезличивание, удаление, уничтожение. С использованием средств автоматизации и без них.</p>`],
+    ['Срок и отзыв',`<p>Согласие действует до удаления аккаунта или до его отзыва. Отозвать согласие можно письмом на ${MAIL}. После отзыва данные удаляются в течение 30 дней.</p>`],
+  ]},
+};
+const DOC_NAV = [['policy','Политика конфиденциальности'],['terms','Пользовательское соглашение'],['consent','Согласие на обработку данных'],['about','О проекте']];
+function docNav(cur){ return `<nav class="doc-nav" aria-label="Информация"><span class="eyebrow">Информация</span>${DOC_NAV.map(([id,t])=>`<button data-go="${id}" class="${cur===id?'on':''}">${t}</button>`).join('')}</nav>`; }
+function docPage(id){
+  const d = DOCS[id]; let n = 0;
+  return `<div class="doc">${docNav(id)}<article class="doc-body"><h1>${d.t}</h1><p class="doc-date">Редакция от 1 октября 2026</p>
+    ${d.s.map(([h,b])=>`<section>${h?`<h2>${++n}. ${h}</h2>`:''}${b}</section>`).join('')}</article></div>`;
+}
+pages.policy = () => docPage('policy');
+pages.terms = () => docPage('terms');
+pages.consent = () => docPage('consent');
+pages.about = () => `<div class="doc">${docNav('about')}<article class="doc-body"><h1>О проекте</h1>
+  <p class="mt-12">«Карьерный навигатор IT» (IT Career Navigator) помогает понять, чего не хватает до первой работы в IT, и составить план, как это закрыть.</p>
+  <section><h2>Зачем</h2><p>Новички часто учат то, что попалось в случайном курсе, а не то, что просят работодатели. Мы сравниваем навыки с требованиями вакансий junior в России и показываем разрыв: что уже есть, чего не хватает и сколько времени займёт обучение.</p></section>
+  <section><h2>Как это работает</h2><ul><li>Выбираете профессию в каталоге или по тесту профориентации.</li><li>Проходите оценку навыков, около 10 минут.</li><li>Получаете процент соответствия и список пробелов.</li><li>Учитесь по персональному плану со сроками.</li></ul></section>
+  <section><h2>Команда</h2><p>Проект делает команда студентов Уфимского университета науки и технологий (УУНиТ).</p></section>
+  <section><h2>Контакты</h2><p>${MAIL}<br>Telegram: @navigator_it<br><span class="muted">Пн–Пт, 10:00–19:00 (МСК)</span></p></section>
+  </article></div>`;
+
+function cookieBar(){
+  const el = document.getElementById('cookie');
+  document.body.classList.toggle('has-cookie', !state.cookieOk);
+  if (state.cookieOk){ el.innerHTML=''; return; }
+  el.innerHTML = `<div class="cookie" role="region" aria-label="Файлы cookie"><div class="cookie-in"><p>Мы используем файлы cookie. Продолжая пользоваться сайтом, вы соглашаетесь с <a href="#policy">политикой конфиденциальности</a>.</p><button class="btn primary sm" data-act="cookieOk">Понятно</button></div></div>`;
+}
+
+pages.notfound = () => `<div class="stack nf-wrap"><span class="mono nf-code">404</span><h1>Страница не найдена</h1><p class="muted">Возможно, ссылка устарела или в адресе опечатка.</p><button class="btn primary" data-go="home">На главную</button></div>`;
+
+/* ---------- отрисовка ---------- */
+// Рисует страницу из адреса: проверяет доступ, вставляет HTML страницы в #app
+// и заново рисует шапку, футер и плашку cookie (они зависят от роли).
+function render() {
+  const page = location.hash.replace('#', '') || 'home';
+  const target = guard(page);
+  if (target !== page) { location.hash = target; return; }
+  current = target;
+  if (target !== 'roadmap') closeDrawer();
+  document.getElementById('app').innerHTML = pages[target]();
+  document.title = 'Карьерный навигатор IT';
+  topbar();
+  footer();
+  cookieBar();
+  window.scrollTo(0, 0);
+  if (target === 'roadmap' && state.openTopic) openDrawer(state.openTopic);
+}
+
+/* ---------- реакции на клики и формы ---------- */
+// После входа возвращаем туда, куда человек шёл до входа.
+function afterLogin(){
+  const to = state.returnTo || 'home'; state.returnTo=null; go(to);
+}
+// После оплаты (в прототипе она имитируется) ведём к следующему шагу.
+function afterPurchase(){
+  state.sub='active';
+  toast('Оплата прошла (имитация). Подписка активна.');
+  if (state.profession && state.assessed) go('plan');
+  else if (state.profession) go('assess');
+  else go('catalog');
+}
+// Один общий обработчик кликов. Кнопка с data-go просто ведёт на страницу,
+// кнопка с data-act запускает действие: ищите его ниже как case 'имя'.
+document.addEventListener('click',e=>{
+  const el = e.target.closest('[data-go],[data-act]'); if(!el) return;
+  const act = el.dataset.act;
+  if (el.dataset.go){ e.preventDefault(); go(el.dataset.go,{authTab:el.dataset.tab}); return; }
+  switch(act){
+    case 'noop': e.preventDefault(); toast('В прототипе ссылки на материалы — заглушки'); break;
+    case 'theme': { const t=isDark()?'light':'dark'; document.documentElement.dataset.theme=t; try{localStorage.setItem('nav-theme',t)}catch(e){} topbar(); break; }
+    case 'cookieOk': state.cookieOk=true; try{localStorage.setItem('nav-cookie','1')}catch(e){} cookieBar(); break;
+    case 'start':
+      if (!state.auth) go('auth',{authTab:'register'});
+      else go(state.onboarded?'cabinet':'onboarding'); break;
+    case 'tab': state.authTab=el.dataset.tab; render(); break;
+    case 'quizAns': { state.quizAns=state.quizAns||[]; state.quizAns[state.quizStep]=+el.dataset.v; render(); setTimeout(()=>{state.quizStep++; if (state.quizStep>=QUIZ.length) state.quizDone=true; render(); window.scrollTo(0,0)},220); break; }
+    case 'quizRestart': state.quizStep=0; state.quizAns=[]; state.quizDone=false; render(); break;
+    case 'quizBack': state.quizStep=Math.max(0,state.quizStep-1); render(); break;
+    case 'allProf': go('catalog'); break;
+    case 'openProf': {
+      const p = PROFESSIONS.find(x=>x.id===el.dataset.id);
+      if (!p.live){ toast(state.auth?'Сообщим о запуске «'+p.t+'» на '+state.email:'Сообщим о запуске. В прототипе открывается только Frontend'); break; }
+      state.profession='frontend';
+      if (role()==='sub' && !state.assessed) go('assess'); else go('roadmap');
+      break; }
+    case 'topic': openDrawer(el.dataset.id); break;
+    case 'toQuiz': state.quizStep=0; state.quizAns=[]; state.pickedProf='unknown'; go('quiz'); break;
+    case 'pickProf': {
+      const id=el.dataset.id; state.pickedProf=id;
+      if (id!=='unknown' && !PROFESSIONS.find(p=>p.id===id).live){ toast('В прототипе открывается только Frontend, остальные — заглушки'); }
+      if (!state.auth) go('auth',{authTab:'register'}); else go(state.onboarded?(id==='unknown'?'quiz':'roadmap'):'onboarding');
+      break; }
+    case 'demoGo': go(state.assessed?'report':'assess'); break;
+    case 'catFilter': state.catFilter=el.dataset.v; render(); applyCatSearch(); break;
+    case 'bug': document.getElementById('bugBox').innerHTML=`<div class="stack gap-8"><label for="bugTxt" class="fs-13 fw-600">Что не так в теме?</label><textarea id="bugTxt" class="ta-short" placeholder="Например: ссылка не открывается"></textarea><div><button class="btn ghost sm" data-act="bugSend">Отправить</button></div></div>`; break;
+    case 'bugSend': document.getElementById('bugBox').innerHTML='<span class="chip good">Спасибо, передали команде</span>'; break;
+    case 'closeDrawer': closeDrawer(); break;
+    case 'openTopic': state.openTopic=el.dataset.id; go('roadmap'); break;
+    case 'learn': {
+      if (!state.auth){ state.returnTo='roadmap'; go('auth',{authTab:'login'}); break; }
+      const id=el.dataset.id;
+      if (roadmapMode()==='personal' && PERSONAL.known.includes(id)){ toast('Тема отмечена как известная по оценке навыков'); break; }
+      state.learned.has(id)?state.learned.delete(id):state.learned.add(id);
+      if (roadmapMode()==='personal' && state.learned.has(PERSONAL.current)){ const nx=PLAN.find(p=>TOPICS[p[0]]&&!state.learned.has(p[0])&&!PERSONAL.known.includes(p[0])); if(nx){ PERSONAL.current=nx[0]; toast('Следующий шаг: '+nx[1]); } }
+      const keep=id; render(); openDrawer(keep); break; }
+    case 'toAssess': go('assess'); break;
+    case 'assessNext':
+      if (state.assessStep < ASSESS.length-1){ state.assessStep++; render(); }
+      else { state.assessed=true; state.profession='frontend'; state.assessStep=0; go('report'); }
+      break;
+    case 'assessBack': state.assessStep=Math.max(0,state.assessStep-1); render(); break;
+    case 'buy':
+      if (!state.auth){ state.returnTo='pricing'; go('auth',{authTab:'login'}); break; }
+      afterPurchase(); break;
+    case 'askCancel':
+      document.getElementById('cancelBox').innerHTML = `<div class="stack gap-10"><span class="fs-14">Отменить подписку? План и карта станут доступны только для чтения, прогресс сохранится.</span><div class="row"><button class="btn primary sm" data-act="doCancel">Да, отменить</button><button class="btn ghost sm" data-act="keepSub">Оставить</button></div></div>`; break;
+    case 'doCancel': state.sub='expired'; toast('Подписка отменена'); render(); break;
+    case 'keepSub': render(); break;
+    case 'logout': state.auth=false; state.returnTo=null; toast('Вы вышли из аккаунта'); go('home'); break;
+  }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.getAttribute && e.target.getAttribute('role')==='button'){ e.target.click(); } if(e.key==='Escape'){ closeDrawer(); } });
+function applyCatSearch(){ const q=(state.catQuery||'').trim().toLowerCase(); document.querySelectorAll('#catGrid .pcard').forEach(c=>c.hidden=!!q&&!c.dataset.name.includes(q)); }
+document.addEventListener('input',e=>{ if(e.target.id==='catSearch'){ state.catQuery=e.target.value; applyCatSearch(); } if(e.target.id==='obHours'){ document.getElementById('obHoursV').textContent=e.target.value; } });
+// Формы. Каждая сначала проверяет поля через validate(), потом меняет state.
+document.addEventListener('submit',e=>{
+  e.preventDefault(); const f=e.target;
+  if (f.id==='fbForm'){
+    if (!validate(f,[['fbName',v=>v.length>0,'Напишите, как к вам обращаться'],['fbMail',isEmail,'Проверьте адрес почты'],['fbMsg',v=>v.length>=5,'Напишите вопрос']])) return;
+    if (!document.getElementById('fbOk').checked){ document.getElementById('fbErr').hidden=false; return; }
+    f.innerHTML = `<div class="stack sent-box"><span class="chip good">Отправлено</span><h2>Спасибо, мы ответим</h2><p class="muted">Ответ придёт на указанную почту.</p></div>`;
+  }
+  if (f.id==='regForm'){
+    if (!validate(f,[['rLogin',v=>/^[a-zA-Z0-9_.-]{3,30}$/.test(v),'Логин: от 3 до 30 латинских букв, цифр, точек или дефисов'],['rMail',isEmail,'Проверьте адрес почты'],['rPass',v=>v.length>=8,'Пароль должен быть не короче 8 символов'],['rTel',v=>v==='' || v.replace(/\D/g,'').length>=10,'Проверьте номер телефона']])) return;
+    if (!document.getElementById('rOk').checked){ document.getElementById('rErr').hidden=false; return; }
+    state.auth=true; state.onboarded=false; state.returnTo=null; toast('Аккаунт создан'); go('onboarding');
+  }
+  if (f.id==='loginForm'){ if (!validate(f,[['lMail',isEmail,'Проверьте адрес почты'],['lPass',v=>v.length>0,'Введите пароль']])) return; state.auth=true; toast('Вы вошли'); afterLogin(); }
+  if (f.id==='resetForm'){ if (!validate(f,[['rsMail',isEmail,'Проверьте адрес почты']])) return; document.getElementById('rsDone').hidden=false; }
+  if (f.id==='onbForm'){
+    const st=f.querySelector('input[name=st]:checked'); if(st) state.status=st.value;
+    state.hours=+document.getElementById('obHours').value; state.deadline=document.getElementById('obDl').value;
+    state.onboarded=true; const p=document.getElementById('obProf').value;
+    if (p==='unknown'){ state.quizStep=0; go('quiz'); }
+    else { if(p!=='frontend') toast('В прототипе открывается карточка Frontend-разработчика'); state.profession='frontend'; go('roadmap'); }
+  }
+  if (f.id==='profForm'){
+    if (!validate(f,[['pName',v=>v.length>0 && v.length<=60,'Укажите имя, до 60 символов'],['pMail',isEmail,'Проверьте адрес почты'],['pHours',v=>/^\d+$/.test(v) && +v>=1 && +v<=80,'Часов в неделю: от 1 до 80']])) return;
+    state.name=document.getElementById('pName').value||state.name; state.email=document.getElementById('pMail').value||state.email;
+    state.status=document.getElementById('pStatus').value; state.hours=Math.max(1,parseInt(document.getElementById('pHours').value)||state.hours);
+    state.deadline=document.getElementById('pDl').value; toast('Сохранено. План пересчитан.');
+  }
+  if (f.id==='pwForm'){ if (!validate(f,[['pw1',v=>v.length>=8,'Пароль должен быть не короче 8 символов'],['pw2',v=>v===document.getElementById('pw1').value.trim(),'Пароли не совпадают']])) return; toast('Пароль изменён'); f.reset(); }
+});
+
+render();
+
+// параллакс картинки на главной
+document.addEventListener('mousemove',e=>{const a=document.querySelector('.o-art.iso-art');if(!a)return;const r=a.getBoundingClientRect();
+  const inside=e.clientX>r.left-200&&e.clientX<r.right+200&&e.clientY>r.top-200&&e.clientY<r.bottom+200;
+  const mx=inside?Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/(r.width/2))):0, my=inside?Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height/2))/(r.height/2))):0;
+  a.style.setProperty('--mx',mx.toFixed(3));a.style.setProperty('--my',my.toFixed(3));});
+
+</script>
+</body>
+</html>
