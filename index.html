@@ -572,6 +572,7 @@ body.has-cookie{padding-bottom:130px}
 .sent-box{padding-block:30px!important;align-items:flex-start!important}
 
 /* ---------- телефоны и планшеты ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .burger{display:none;margin-left:auto;width:42px;height:42px;border:0;border-radius:10px;background:var(--sunk);cursor:pointer;flex-direction:column;justify-content:center;align-items:center;gap:5px}
 .burger span{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink);transition:transform .2s,opacity .2s}
 .menu-open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -579,7 +580,9 @@ body.has-cookie{padding-bottom:130px}
 .menu-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 @media (max-width:900px){
   .top .wrap{gap:12px;min-height:58px}
-  .burger{display:flex}
+  .burger{display:flex;flex:none}
+  .top .logo{flex:1 1 0;min-width:0;text-align:left}
+  .top .logo-t{min-width:0;line-height:1.15}
   .nav{display:none;width:100%;margin:0 0 12px;flex-direction:column;gap:2px}
   .menu-open .nav{display:flex}
   .nav button{text-align:left;padding:12px;font-size:16px}
