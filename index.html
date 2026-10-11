@@ -571,6 +571,36 @@ body.has-cookie{padding-bottom:130px}
 .ring.ring-sm{width:88px!important;height:88px!important}
 .sent-box{padding-block:30px!important;align-items:flex-start!important}
 
+/* ---------- телефоны и планшеты ---------- */
+.burger{display:none;margin-left:auto;width:42px;height:42px;border:0;border-radius:10px;background:var(--sunk);cursor:pointer;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.burger span{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink);transition:transform .2s,opacity .2s}
+.menu-open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.menu-open .burger span:nth-child(2){opacity:0}
+.menu-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media (max-width:900px){
+  .top .wrap{gap:12px;min-height:58px}
+  .burger{display:flex}
+  .nav{display:none;width:100%;margin:0 0 12px;flex-direction:column;gap:2px}
+  .menu-open .nav{display:flex}
+  .nav button{text-align:left;padding:12px;font-size:16px}
+  .nav .cta{text-align:center;margin-top:6px}
+  .nav .theme{width:auto;display:flex;gap:10px;align-items:center;justify-content:flex-start;padding:12px}
+  .nav .theme::after{content:attr(aria-label)}
+  .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media (max-width:760px){
+  .cols-2,.cols-even,.cols-main-side{grid-template-columns:minmax(0,1fr)!important}
+}
+.drawer:not(.open){visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+@media (max-width:520px){
+  .btn{white-space:normal;text-align:center}
+}
+h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
+@media (max-width:520px){.doc-body h1{font-size:21px}}
+@media (max-width:520px){.gap-head{flex-wrap:wrap!important}}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@media (max-width:520px){.stat-grid .stat b{font-size:22px;white-space:nowrap}.stat-grid .panel{padding:16px}}
+
 </style>
   
 </head>
@@ -822,8 +852,11 @@ function topbar(){
   const items = r==='guest'
     ? [['catalog','Каталог профессий'],['pricing','Подписка'],['auth','Войти','cta']]
     : [['catalog','Каталог профессий'],['plan','Мой план'],['pricing','Подписка'],['cabinet','Личный кабинет','cta']];
-  document.getElementById('topbar').innerHTML = `
+  const bar = document.getElementById('topbar');
+  bar.classList.remove('menu-open');
+  bar.innerHTML = `
     <button class="logo" data-go="home">${logo()}<span class="logo-t">Карьерный навигатор&nbsp;<b>IT</b></span></button>
+    <button class="burger" data-act="menu" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav"><button class="theme" data-act="theme" aria-label="${isDark()?'Светлая тема':'Тёмная тема'}" title="${isDark()?'Светлая тема':'Тёмная тема'}">${isDark()?ICO_SUN:ICO_MOON}</button>${items.map(([p,t,c])=>`<button data-go="${p}" ${p==='auth'?'data-tab="login"':''} class="${c||''} ${current===p?'on':''}">${t}</button>`).join('')}</nav>`;
 }
 function footer(){
@@ -846,7 +879,7 @@ function skillRows(list,kind){
 }
 function gapReport(full, compact){
   const ring = `<div class="ring" style="--p:${GAP.match}"><b>${GAP.match}%</b></div>`;
-  const head = `<div class="row gap-24 items-center nowrap">${ring}
+  const head = `<div class="row gap-24 items-center nowrap gap-head">${ring}
     <div class="stack gap-6 min-0"><span class="eyebrow">Соответствие вакансиям</span><h3>Frontend-разработчик, junior</h3>
     <p class="muted fs-14">Сравнили ваши ответы с требованиями ${'1 240'} вакансий за последние 3 месяца. Процент рядом с навыком показывает, в какой доле вакансий он встречается.</p></div></div>`;
   if (full){
@@ -1504,6 +1537,7 @@ document.addEventListener('click',e=>{
   switch(act){
     case 'noop': e.preventDefault(); toast('В прототипе ссылки на материалы — заглушки'); break;
     case 'theme': { const t=isDark()?'light':'dark'; document.documentElement.dataset.theme=t; try{localStorage.setItem('nav-theme',t)}catch(e){} topbar(); break; }
+    case 'menu': { const bar=document.getElementById('topbar'); const open=bar.classList.toggle('menu-open'); el.setAttribute('aria-expanded',open); break; }
     case 'cookieOk': state.cookieOk=true; try{localStorage.setItem('nav-cookie','1')}catch(e){} cookieBar(); break;
     case 'start':
       if (!state.auth) go('auth',{authTab:'register'});
