@@ -615,28 +615,6 @@ h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
   .check input{margin:2px 0 0;width:18px;height:18px;flex:none}
 }
 
-/* карта профессии и подписка на телефоне */
-.rm-list{display:none}
-@media (max-width:1000px){
-  .rm-scroll{display:none}
-  .rm-list{display:flex;flex-direction:column}
-  .rl-step{display:flex;flex-direction:column;gap:8px}
-  .rl-step + .rl-step::before{content:"";align-self:center;width:3px;height:18px;margin:2px 0;border-radius:2px;background:var(--spine)}
-  .rm-list .node{position:relative;width:100%;min-height:44px;height:auto;padding:10px 12px;transform:none}
-  .rm-list .node.main,.rm-list .node.proj{min-height:50px}
-  .rl-subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .rm-list .mk{top:-8px;right:6px;width:18px;height:18px}
-  .rl-subs .node{font-size:13px;hyphens:auto;overflow-wrap:break-word}
-  .rl-subs .node:only-child,.rl-subs .node:last-child:nth-child(odd){grid-column:1/-1}
-}
-@media (max-width:760px){
-  .tiers .tier.pro{order:-1}
-  .tiers .tier{gap:14px}
-  .tiers .tier .btn{width:100%}
-  .tiers .tier.free li.no{display:none}
-  .tiers .tier .price{font-size:30px}
-}
-
 </style>
   
 </head>
@@ -1289,16 +1267,14 @@ pages.roadmap = () => {
   const L = roadmapLayout();
   const p = PROFESSIONS[0];
   const pr = roadmapProgress();
-  const node = (id,kind,style='') => {
-    let cls = `node ${kind}`; const mk = TOPICS[id].mark;
-    if (mode==='base'){ if (state.learned.has(id)) cls+=' done'; else if (kind==='sub' && markOf(id)==='opt') cls+=' optn'; }
-    else { cls+=' '+topicStatus(id); if (mode==='frozen') cls+=' frozen'; }
-    if (state.openTopic===id) cls+=' sel';
+  const nodeHtml = L.nodes.map(n=>{
+    let cls = `node ${n.kind}`; const mk = TOPICS[n.id].mark;
+    if (mode==='base'){ if (state.learned.has(n.id)) cls+=' done'; else if (n.kind==='sub' && markOf(n.id)==='opt') cls+=' optn'; }
+    else { cls+=' '+topicStatus(n.id); if (mode==='frozen') cls+=' frozen'; }
+    if (state.openTopic===n.id) cls+=' sel';
     const badge = mk && mk!=='opt' ? `<span class="mk ${mk}" title="${MARK_TXT[mk]}">${MK_ICO[mk]}</span>` : '';
-    return `<button class="${cls}"${style} data-act="topic" data-id="${id}">${TOPICS[id].t}${badge}</button>`;
-  };
-  const nodeHtml = L.nodes.map(n=>node(n.id,n.kind,` style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px"`)).join('');
-  const listHtml = ROADMAP.map(m=>`<div class="rl-step">${node(m.id,m.proj?'proj':'main')}${(m.subs||[]).length?`<div class="rl-subs">${m.subs.map(s=>node(s[0],'sub')).join('')}</div>`:''}</div>`).join('');
+    return `<button class="${cls}" style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px" data-act="topic" data-id="${n.id}">${TOPICS[n.id].t}${badge}</button>`;
+  }).join('');
   const modeChip = {base:'<span class="chip">Базовый режим</span>',personal:'<span class="chip amber">Персональный режим</span>',frozen:'<span class="chip">Только чтение</span>'}[mode];
   const statusLegend = mode==='base' ? '' : `<span><i class="sw-known"></i>Уже знаю</span><span><i class="sw-learn"></i>Изучить</span><span><i class="sw-current"></i>Текущий шаг</span>`;
   return `
@@ -1320,8 +1296,7 @@ pages.roadmap = () => {
   <div class="rm-scroll"><div class="rm" style="width:${L.W}px;height:${L.H}px">
     <svg width="${L.W}" height="${L.H}" viewBox="0 0 ${L.W} ${L.H}" aria-hidden="true">${L.lines.join('')}</svg>${nodeHtml}
   </div></div>
-  <div class="rm-list">${listHtml}</div>
-  <p class="muted fs-13 mt-10">Структура карты по образцу roadmap.sh.</p>`;
+  <p class="muted fs-13 mt-10">Структура карты по образцу roadmap.sh. Режим карты в прототипе зависит от переключателя «Смотреть как» внизу экрана.</p>`;
 };
 function openDrawer(id){
   state.openTopic=id; const t=TOPICS[id]; const mode=roadmapMode(); const d=document.getElementById('drawer');
@@ -1379,8 +1354,8 @@ pages.pricing = () => {
   const r=role();
   const btn = r==='sub' ? `<button class="btn ghost" disabled>Подписка активна</button>` : `<button class="btn primary" data-act="buy">${r==='frozen'?'Продлить за 250 ₽':'Купить за 250 ₽'}</button>`;
   return `<div class="page-head"><div><span class="eyebrow">Подписка</span><h1 class="mt-8">Персональный план до первой работы</h1><p class="muted">Базовые инструменты бесплатны. Подписка нужна, чтобы получить полный разбор и план под ваше время и сроки.</p></div></div>
-  <div class="grid2 tiers">
-    <div class="panel tier free"><div class="stack gap-6"><h3>Бесплатно</h3><span class="price">0 ₽</span></div>
+  <div class="grid2">
+    <div class="panel tier"><div class="stack gap-6"><h3>Бесплатно</h3><span class="price">0 ₽</span></div>
       <ul><li>Каталог профессий</li><li>Общая карта тем профессии</li><li>Отметки «Изучено» после входа</li><li>Профориентация</li><li>Оценка навыков и краткий отчёт: процент и топ-3 пробела</li>
       <li class="no">Полный отчёт о разрыве</li><li class="no">Персональный план</li><li class="no">Персональная карта профессии</li></ul>
       ${r==='guest'?`<button class="btn ghost" data-act="start">Зарегистрироваться</button>`:`<button class="btn ghost" disabled>Ваш текущий тариф</button>`}</div>
