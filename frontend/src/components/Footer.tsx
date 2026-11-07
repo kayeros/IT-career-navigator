@@ -18,12 +18,15 @@ export function Footer() {
             <div className="f-links">
               <Link to="/professions">Каталог профессий</Link>
               <Link to="/quiz">Тест на профориентацию</Link>
+              <Link to="/pricing">Подписка</Link>
             </div>
           </div>
           <div className="f-col f-info">
             <span className="eyebrow">Информация</span>
             <div className="f-links">
               <Link to="/privacy">Политика конфиденциальности</Link>
+              <Link to="/terms">Пользовательское соглашение</Link>
+              <Link to="/about">О проекте</Link>
             </div>
           </div>
           <div className="f-col">
