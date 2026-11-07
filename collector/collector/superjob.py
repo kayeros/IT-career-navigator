@@ -13,9 +13,9 @@ from collector.vacancies import (SEARCHES, Vacancy, ensure_source, finish_run, i
 log = logging.getLogger(__name__)
 
 API_URL = "https://api.superjob.ru/2.0/vacancies/"
-PAGE_SIZE = 100
+PAGE_SIZE = 40  # больше SuperJob на страницу не отдаёт
 # SuperJob отдаёт не больше 500 вакансий на один поисковый запрос.
-MAX_RESULTS = 500
+MAX_RESULTS = 480
 # Пауза между запросами, чтобы не упираться в лимит API.
 REQUEST_PAUSE = 0.5
 
@@ -46,8 +46,12 @@ def fetch(client: httpx.Client, keyword: str, experience: int):
     """Постранично отдаёт объекты вакансий по одному запросу."""
     page = 0
     while page * PAGE_SIZE < MAX_RESULTS:
+        # Ищем только в названии вакансии (srws=1): обычный keyword ищет по всему тексту
+        # и приносит в основном нерелевантные вакансии.
         resp = client.get(API_URL, params={
-            "keyword": keyword,
+            "keywords[0][keys]": keyword,
+            "keywords[0][srws]": 1,
+            "keywords[0][skwc]": "particular",
             "experience": experience,
             "count": PAGE_SIZE,
             "page": page,
@@ -76,7 +80,7 @@ def load(conn: psycopg.Connection, api_key: str, profession_slug: str) -> None:
     seen: set[str] = set()
     try:
         with httpx.Client(headers={"X-Api-App-Id": api_key}, timeout=30) as client:
-            for keyword in search.keywords:
+            for keyword in search.title_words:
                 for experience in EXPERIENCE:
                     for obj in fetch(client, keyword, experience):
                         v = parse_vacancy(obj)

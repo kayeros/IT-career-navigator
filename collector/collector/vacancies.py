@@ -17,23 +17,31 @@ KEEP = "12 months"
 
 @dataclass(frozen=True)
 class Search:
-    """Поисковые запросы профессии и фильтр по названию вакансии от шума выдачи."""
+    """Поисковые запросы профессии и фильтр по названию вакансии от шума выдачи.
+
+    keywords — фразы для поиска по всему тексту («Работа России»);
+    title_words — отдельные слова для поиска только в названии вакансии (SuperJob).
+    """
 
     keywords: tuple[str, ...]
+    title_words: tuple[str, ...]
     title_pattern: re.Pattern
 
 
 SEARCHES: dict[str, Search] = {
     "qa-manual": Search(
         keywords=("тестировщик", "QA инженер", "QA engineer", "специалист по тестированию"),
+        title_words=("тестировщик", "тестирование", "QA"),
         title_pattern=re.compile(r"тестиров|\bqa\b", re.I),
     ),
     "python-developer": Search(
         keywords=("python разработчик", "python developer", "программист python"),
+        title_words=("python", "питон"),
         title_pattern=re.compile(r"python|питон", re.I),
     ),
     "java-developer": Search(
         keywords=("java разработчик", "java developer", "программист java"),
+        title_words=("java",),
         title_pattern=re.compile(r"\bjava\b(?!\s*script)", re.I),
     ),
 }
