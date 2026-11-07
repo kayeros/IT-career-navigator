@@ -24,6 +24,14 @@ tags:
     description: Отметка «Изучено»
   - name: match
     description: Процент соответствия вакансиям
+  - name: onboarding
+    description: Онбординг и профиль
+  - name: assessment
+    description: Оценка навыков
+  - name: plan
+    description: План «что учить дальше»
+  - name: admin
+    description: Админка контента (только роль admin)
 
 paths:
   /auth/register:
@@ -99,6 +107,103 @@ paths:
       responses:
         '204':
           description: Сессия закрыта
+
+  /auth/verify-email:
+    post:
+      tags: [auth]
+      summary: Подтвердить почту по ссылке из письма
+      description: |
+        Токен приходит в ссылке `/verify-email?token=...` (пока письма пишутся в журнал сервера).
+        Токен одноразовый, действует 48 часов.
+      operationId: verifyEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/TokenRequest'}
+      responses:
+        '204':
+          description: Почта подтверждена
+        '400':
+          description: 'Ссылка неверная, устарела или уже использована (`invalid_token`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /auth/verify-email/resend:
+    post:
+      tags: [auth]
+      summary: Отправить письмо подтверждения ещё раз
+      description: Не чаще раза в 60 секунд. Предыдущие ссылки перестают действовать.
+      operationId: resendVerification
+      security: [{session: []}]
+      responses:
+        '204':
+          description: Письмо отправлено
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '409':
+          description: 'Почта уже подтверждена (`already_verified`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '429':
+          description: 'Слишком часто (`too_many_requests`), заголовок Retry-After — через сколько секунд можно снова'
+          headers:
+            Retry-After:
+              schema: {type: integer}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /auth/password-reset:
+    post:
+      tags: [auth]
+      summary: Запросить ссылку для смены пароля
+      description: |
+        Всегда отвечает 204, даже если почты нет в базе: так нельзя узнать, зарегистрирован ли человек.
+        Ссылка `/reset-password?token=...` действует 1 час; на одну почту — не чаще раза в 60 секунд.
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: {type: string, format: email}
+      responses:
+        '204':
+          description: Если почта зарегистрирована, письмо отправлено
+        '400': {$ref: '#/components/responses/ValidationError'}
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [auth]
+      summary: Задать новый пароль по ссылке из письма
+      description: Токен одноразовый. После смены пароля все сессии пользователя закрываются — нужно войти заново.
+      operationId: confirmPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token: {type: string}
+                password: {type: string, minLength: 8, maxLength: 128}
+      responses:
+        '204':
+          description: Пароль изменён
+        '400':
+          description: 'Ошибка в пароле (`validation_error`) или ссылка неверная / устарела (`invalid_token`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
 
   /me:
     get:
@@ -207,6 +312,831 @@ paths:
         '401': {$ref: '#/components/responses/Unauthorized'}
         '404': {$ref: '#/components/responses/NotFound'}
 
+  /me/profile:
+    get:
+      tags: [onboarding]
+      summary: Профиль и ответы онбординга
+      operationId: getProfile
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Профиль (поля null, пока онбординг не пройден)
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Profile'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    put:
+      tags: [onboarding]
+      summary: Сохранить ответы онбординга
+      description: |
+        Передаются только изменяемые поля. `complete_onboarding: true` отмечает онбординг пройденным.
+        Выбор профессии в онбординге не хранится — фронтенд сразу ведёт на её карточку или в профориентацию.
+      operationId: updateProfile
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProfileInput'}
+      responses:
+        '200':
+          description: Сохранено
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Profile'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /professions/{slug}/assessments:
+    post:
+      tags: [assessment]
+      summary: Начать или продолжить оценку навыков
+      description: |
+        Если есть незавершённая оценка по профессии — возвращает её (200), иначе создаёт новую (201).
+        Повторная оценка — не раньше чем через 7 дней после прошлой (`too_soon`).
+      operationId: startAssessment
+      security: [{session: []}]
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Незавершённая оценка
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Assessment'}
+        '201':
+          description: Новая оценка
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Assessment'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409':
+          description: 'Повторная оценка раньше чем через 7 дней (`too_soon`); в message — когда можно'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /assessments/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: integer, format: int64}}
+    get:
+      tags: [assessment]
+      summary: Оценка навыков с вопросами и ответами
+      operationId: getAssessment
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Оценка
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Assessment'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /assessments/{id}/answers/{skill_id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: integer, format: int64}}
+      - {name: skill_id, in: path, required: true, schema: {type: integer, format: int64}}
+    put:
+      tags: [assessment]
+      summary: Ответить по навыку
+      description: |
+        Уровень: «не знаю» — 0, «базово» — 0,5, «уверенно» — 1, если проверочный вопрос решён верно, иначе 0,5.
+        Для «уверенно» нужен `check_option` — номер выбранного варианта (с 0). Проверочный вопрос
+        засчитывается один раз: повторный ответ на него результат не меняет.
+      operationId: answerAssessment
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AnswerInput'}
+      responses:
+        '200':
+          description: Ответ сохранён
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AssessmentSkill'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409':
+          description: 'Оценка уже завершена (`completed`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /assessments/{id}/complete:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: integer, format: int64}}
+    post:
+      tags: [assessment]
+      summary: Завершить оценку и получить краткий отчёт
+      description: Нужны ответы по всем навыкам. Уровни навыков сохраняются и действуют во всех профессиях.
+      operationId: completeAssessment
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Краткий отчёт о разрыве
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Report'}
+        '400':
+          description: 'Ответили не на все навыки (`validation_error`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409':
+          description: 'Оценка уже завершена (`completed`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /professions/{slug}/report:
+    get:
+      tags: [match]
+      summary: Краткий отчёт о разрыве
+      description: |
+        Считается на лету из оценки, «Изучено» и последнего снимка весов (не хранится).
+        Краткий: % соответствия, сколько навыков есть / частично / не хватает и топ-3 пробела.
+        Полный отчёт — по подписке (позже).
+      operationId: getReport
+      security: [{session: []}]
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Отчёт
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Report'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /professions/{slug}/plan:
+    get:
+      tags: [plan]
+      summary: Текущий план «что учить дальше»
+      description: Отметки «Изучено», прогресс и текущий шаг считаются на лету.
+      operationId: getPlan
+      security: [{session: []}]
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: План
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Plan'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404':
+          description: 'Нет профессии или плана ещё не строили (`not_found`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+    post:
+      tags: [plan]
+      summary: Построить план (каждый вызов — новая версия, прежние сохраняются)
+      description: |
+        Строится алгоритмом без ИИ: навыки с уровнем ниже 1 по убыванию веса в вакансиях →
+        их неизученные темы в порядке roadmap; для навыка «базово» — половина часов.
+        Часы в неделю и дедлайн берутся из тела запроса, иначе из профиля (онбординга).
+        Сейчас план доступен всем вошедшим; после запуска подписки — только подписчикам.
+      operationId: buildPlan
+      security: [{session: []}]
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hours_per_week: {type: integer, minimum: 2, maximum: 40}
+                deadline: {type: [string, 'null'], format: date}
+      responses:
+        '201':
+          description: План построен
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Plan'}
+        '400':
+          description: 'Не указаны часы в неделю и их нет в профиле, или значения вне диапазона (`validation_error`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /waitlist:
+    post:
+      tags: [catalog]
+      summary: «Сообщить о запуске» профессии
+      description: |
+        Записывает почту в лист ожидания профессии. Повторная запись той же почты — без ошибки (204).
+        Для вошедшего пользователя почту можно не передавать — возьмём из аккаунта.
+      operationId: joinWaitlist
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [profession_slug]
+              properties:
+                profession_slug: {type: string}
+                email: {type: string, format: email}
+      responses:
+        '204':
+          description: Записали
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /admin/waitlist:
+    get:
+      tags: [admin]
+      summary: Заявки «Сообщить о запуске»
+      operationId: adminListWaitlist
+      security: [{session: []}]
+      parameters:
+        - {name: profession_slug, in: query, schema: {type: string}}
+      responses:
+        '200':
+          description: Заявки, новые сначала
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/WaitlistEntry'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/unknown-terms:
+    get:
+      tags: [admin]
+      summary: Частые термины из вакансий, которых нет в справочнике навыков
+      description: Наполняет collector. Разбор — PATCH со статусом.
+      operationId: adminListUnknownTerms
+      security: [{session: []}]
+      parameters:
+        - {name: status, in: query, schema: {type: string, enum: [new, became_skill, became_synonym, ignored]}}
+      responses:
+        '200':
+          description: Термины, частые сначала
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/UnknownTerm'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /admin/unknown-terms/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: integer, format: int64}}
+    patch:
+      tags: [admin]
+      summary: Решение по термину
+      description: |
+        `became_skill` — создаётся новый навык со статусом new (дальше его проверяет команда);
+        `became_synonym` — термин становится синонимом навыка `skill_id`; `ignored` — не навык.
+      operationId: adminResolveUnknownTerm
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: {type: string, enum: [became_skill, became_synonym, ignored, new]}
+                skill_id: {type: integer, format: int64, description: 'Обязателен для became_synonym'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/UnknownTerm'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/professions:
+    get:
+      tags: [admin]
+      summary: Все профессии, включая скрытые
+      operationId: adminListProfessions
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminProfession'}}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    post:
+      tags: [admin]
+      summary: Создать профессию
+      operationId: adminCreateProfession
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminProfessionInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminProfession'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/professions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    patch:
+      tags: [admin]
+      summary: Изменить профессию (передаются только изменяемые поля)
+      operationId: adminUpdateProfession
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminProfessionInput'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminProfession'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/professions/{id}/blocks:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    get:
+      tags: [admin]
+      summary: Блоки профессии с темами
+      operationId: adminListBlocks
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminBlock'}}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    post:
+      tags: [admin]
+      summary: Добавить блок
+      operationId: adminCreateBlock
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminBlockInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminBlock'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/professions/{id}/skills:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    get:
+      tags: [admin]
+      summary: Навыки профессии
+      operationId: adminListProfessionSkills
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminProfessionSkill'}}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    put:
+      tags: [admin]
+      summary: Заменить список навыков профессии
+      operationId: adminSetProfessionSkills
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: array, items: {$ref: '#/components/schemas/AdminProfessionSkill'}}
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/blocks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    patch:
+      tags: [admin]
+      summary: Изменить блок
+      operationId: adminUpdateBlock
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminBlockInput'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminBlock'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    delete:
+      tags: [admin]
+      summary: Удалить блок (темы остаются в библиотеке)
+      operationId: adminDeleteBlock
+      security: [{session: []}]
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/blocks/{id}/topics:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    put:
+      tags: [admin]
+      summary: Задать темы блока по порядку
+      operationId: adminSetBlockTopics
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: array, items: {$ref: '#/components/schemas/AdminBlockTopicInput'}}
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/topics:
+    get:
+      tags: [admin]
+      summary: Библиотека тем
+      operationId: adminListTopics
+      security: [{session: []}]
+      parameters:
+        - {name: q, in: query, schema: {type: string}, description: Поиск по названию или slug}
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminTopic'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      tags: [admin]
+      summary: Создать тему
+      operationId: adminCreateTopic
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminTopicInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminTopic'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/topics/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    patch:
+      tags: [admin]
+      summary: Изменить тему (slug менять нельзя, на него завязан прогресс)
+      operationId: adminUpdateTopic
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminTopicInput'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminTopic'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/topics/{id}/skills:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    put:
+      tags: [admin]
+      summary: Задать навыки, которые закрывает тема
+      operationId: adminSetTopicSkills
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/IdList'}
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/topics/{id}/resources:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    put:
+      tags: [admin]
+      summary: Задать материалы темы по порядку
+      operationId: adminSetTopicResources
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/IdList'}
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/skills:
+    get:
+      tags: [admin]
+      summary: Справочник навыков с синонимами
+      operationId: adminListSkills
+      security: [{session: []}]
+      parameters:
+        - {name: status, in: query, schema: {type: string, enum: [new, in_review, verified]}}
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminSkill'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      tags: [admin]
+      summary: Добавить навык
+      operationId: adminCreateSkill
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminSkillInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminSkill'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/skills/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    patch:
+      tags: [admin]
+      summary: Изменить навык или его статус (new, in_review, verified)
+      operationId: adminUpdateSkill
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminSkillInput'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminSkill'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/skills/{id}/synonyms:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    post:
+      tags: [admin]
+      summary: Добавить синоним
+      operationId: adminAddSynonym
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SynonymInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Synonym'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/synonyms/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    delete:
+      tags: [admin]
+      summary: Удалить синоним
+      operationId: adminDeleteSynonym
+      security: [{session: []}]
+      responses:
+        '204':
+          description: Готово
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/resources:
+    get:
+      tags: [admin]
+      summary: Материалы
+      operationId: adminListResources
+      security: [{session: []}]
+      parameters:
+        - {name: status, in: query, schema: {type: string, enum: [ai_suggested, approved, rejected, replaced]}}
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AdminResource'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      tags: [admin]
+      summary: Добавить материал
+      operationId: adminCreateResource
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminResourceInput'}
+      responses:
+        '201':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminResource'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /admin/resources/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    patch:
+      tags: [admin]
+      summary: Изменить материал или решение по нему (одобрить, отклонить, заменить)
+      operationId: adminUpdateResource
+      security: [{session: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminResourceInput'}
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminResource'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+
 components:
   securitySchemes:
     session:
@@ -242,6 +1172,16 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/Error'}
+    Forbidden:
+      description: 'Нет прав: нужна роль admin (`forbidden`)'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Conflict:
+      description: 'Конфликт: такой slug, название или синоним уже есть (`conflict`)'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
     NotFound:
       description: 'Не найдено (`not_found`)'
       content:
@@ -260,7 +1200,7 @@ components:
             code:
               type: string
               description: Машинный код ошибки
-              examples: [validation_error, email_taken, invalid_credentials, too_many_attempts, unauthorized, not_found, internal]
+              examples: [validation_error, too_soon, completed, email_taken, invalid_credentials, too_many_attempts, too_many_requests, invalid_token, already_verified, unauthorized, forbidden, not_found, conflict, internal]
             message:
               type: string
               description: Текст для пользователя
@@ -283,6 +1223,12 @@ components:
           type: boolean
           default: false
           description: Согласие на рассылки (необязательное)
+
+    TokenRequest:
+      type: object
+      required: [token]
+      properties:
+        token: {type: string, description: Токен из ссылки в письме}
 
     LoginRequest:
       type: object
@@ -428,3 +1374,306 @@ components:
               slug: {type: string}
               title: {type: string}
               studied: {type: boolean}
+
+    IdList:
+      type: object
+      required: [ids]
+      properties:
+        ids: {type: array, items: {type: integer, format: int64}}
+
+    AdminProfession:
+      allOf:
+        - $ref: '#/components/schemas/AdminProfessionInput'
+        - type: object
+          required: [id, slug, title, status, sort_order]
+          properties:
+            id: {type: integer, format: int64}
+    AdminProfessionInput:
+      type: object
+      properties:
+        slug: {type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        for_whom: {type: [string, 'null']}
+        status: {type: string, enum: [available, soon, hidden]}
+        sort_order: {type: integer}
+
+    AdminBlock:
+      type: object
+      required: [id, title, sort_order, topics]
+      properties:
+        id: {type: integer, format: int64}
+        title: {type: string}
+        sort_order: {type: integer}
+        topics:
+          type: array
+          items:
+            type: object
+            required: [id, slug, title, optional]
+            properties:
+              id: {type: integer, format: int64}
+              slug: {type: string}
+              title: {type: string}
+              optional: {type: boolean}
+    AdminBlockInput:
+      type: object
+      properties:
+        title: {type: string}
+        sort_order: {type: integer}
+    AdminBlockTopicInput:
+      type: object
+      required: [topic_id]
+      properties:
+        topic_id: {type: integer, format: int64}
+        optional: {type: boolean, default: false, description: Не обязательна для junior}
+
+    AdminProfessionSkill:
+      type: object
+      required: [skill_id, is_key]
+      properties:
+        skill_id: {type: integer, format: int64}
+        name: {type: string, readOnly: true}
+        is_key: {type: boolean, description: Ключевой — участвует в оценке и % соответствия}
+
+    AdminTopic:
+      type: object
+      required: [id, slug, title, hours, skill_ids, resource_ids]
+      properties:
+        id: {type: integer, format: int64}
+        slug: {type: string}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        hours: {type: number}
+        skill_ids: {type: array, items: {type: integer, format: int64}}
+        resource_ids: {type: array, items: {type: integer, format: int64}}
+    AdminTopicInput:
+      type: object
+      properties:
+        slug: {type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', description: Только при создании}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        hours: {type: number, minimum: 0}
+
+    AdminSkill:
+      type: object
+      required: [id, name, status, source, synonyms]
+      properties:
+        id: {type: integer, format: int64}
+        name: {type: string}
+        status: {type: string, enum: [new, in_review, verified]}
+        source: {type: string, enum: [vacancies, manual]}
+        review_comment: {type: [string, 'null']}
+        reviewed_at: {type: [string, 'null'], format: date-time}
+        synonyms: {type: array, items: {$ref: '#/components/schemas/Synonym'}}
+    AdminSkillInput:
+      type: object
+      properties:
+        name: {type: string}
+        status: {type: string, enum: [new, in_review, verified]}
+        review_comment: {type: [string, 'null']}
+    Synonym:
+      type: object
+      required: [id, synonym]
+      properties:
+        id: {type: integer, format: int64}
+        synonym: {type: string}
+    SynonymInput:
+      type: object
+      required: [synonym]
+      properties:
+        synonym: {type: string}
+
+    AdminResource:
+      type: object
+      required: [id, title, url, type, language, is_free, status]
+      properties:
+        id: {type: integer, format: int64}
+        title: {type: string}
+        url: {type: string, format: uri}
+        type: {type: string, enum: [article, video, course, docs, practice]}
+        language: {type: string}
+        is_free: {type: boolean}
+        status: {type: string, enum: [ai_suggested, approved, rejected, replaced]}
+        replaced_by_id: {type: [integer, 'null'], format: int64}
+        review_comment: {type: [string, 'null']}
+        reviewed_at: {type: [string, 'null'], format: date-time}
+    AdminResourceInput:
+      type: object
+      properties:
+        title: {type: string}
+        url: {type: string, format: uri}
+        type: {type: string, enum: [article, video, course, docs, practice]}
+        language: {type: string}
+        is_free: {type: boolean}
+        status: {type: string, enum: [ai_suggested, approved, rejected, replaced]}
+        replaced_by_id: {type: [integer, 'null'], format: int64, description: 'Для status = replaced — материал на замену'}
+        review_comment: {type: [string, 'null']}
+
+    Profile:
+      type: object
+      required: [learner_status, course, hours_per_week, deadline, months_learning, learned_unneeded, onboarding_completed]
+      properties:
+        learner_status: {type: [string, 'null'], enum: [student, graduate, switcher, other, null]}
+        course: {type: [integer, 'null'], description: 'Курс, если студент'}
+        hours_per_week: {type: [integer, 'null'], minimum: 2, maximum: 40}
+        deadline: {type: [string, 'null'], format: date, description: Когда хочет найти работу}
+        months_learning: {type: [integer, 'null'], description: Сколько месяцев уже учится}
+        learned_unneeded: {type: [boolean, 'null'], description: 'Было ли, что учил лишнее'}
+        onboarding_completed: {type: boolean}
+    ProfileInput:
+      type: object
+      properties:
+        learner_status: {type: [string, 'null'], enum: [student, graduate, switcher, other, null]}
+        course: {type: [integer, 'null'], minimum: 1, maximum: 6}
+        hours_per_week: {type: [integer, 'null'], minimum: 2, maximum: 40}
+        deadline: {type: [string, 'null'], format: date}
+        months_learning: {type: [integer, 'null'], minimum: 0, maximum: 240}
+        learned_unneeded: {type: [boolean, 'null']}
+        complete_onboarding: {type: boolean}
+
+    Assessment:
+      type: object
+      required: [id, profession_slug, status, started_at, completed_at, skills]
+      properties:
+        id: {type: integer, format: int64}
+        profession_slug: {type: string}
+        status: {type: string, enum: [in_progress, completed]}
+        started_at: {type: string, format: date-time}
+        completed_at: {type: [string, 'null'], format: date-time}
+        skills:
+          type: array
+          description: Ключевые навыки профессии по убыванию веса в вакансиях
+          items: {$ref: '#/components/schemas/AssessmentSkill'}
+    AssessmentSkill:
+      type: object
+      required: [skill_id, name, question, answer]
+      properties:
+        skill_id: {type: integer, format: int64}
+        name: {type: string}
+        question:
+          description: Проверочный вопрос для «уверенно»; null — вопроса пока нет (тогда «уверенно» засчитывается как 0,5)
+          oneOf:
+            - type: object
+              required: [id, text, options]
+              properties:
+                id: {type: integer, format: int64}
+                text: {type: string}
+                options: {type: array, items: {type: string}}
+            - type: 'null'
+        answer:
+          oneOf:
+            - $ref: '#/components/schemas/Answer'
+            - type: 'null'
+    Answer:
+      type: object
+      required: [self_level, level, check_passed]
+      properties:
+        self_level: {type: string, enum: [none, basic, confident]}
+        level: {type: number, enum: [0, 0.5, 1]}
+        check_passed: {type: [boolean, 'null'], description: Результат проверочного вопроса (только для «уверенно»)}
+    AnswerInput:
+      type: object
+      required: [self_level]
+      properties:
+        self_level: {type: string, enum: [none, basic, confident], description: Не знаю / базово / уверенно}
+        check_option: {type: integer, minimum: 0, description: Номер выбранного варианта проверочного вопроса}
+
+    Report:
+      type: object
+      required: [percent, snapshot, assessment, counts, top_gaps]
+      properties:
+        percent: {type: [number, 'null'], description: '0–100; null, если снимка весов нет'}
+        snapshot:
+          oneOf:
+            - $ref: '#/components/schemas/Snapshot'
+            - type: 'null'
+        assessment:
+          description: Последняя завершённая оценка по профессии; null — оценки не было (уровни только из «Изучено»)
+          oneOf:
+            - type: object
+              required: [id, completed_at]
+              properties:
+                id: {type: integer, format: int64}
+                completed_at: {type: string, format: date-time}
+            - type: 'null'
+        counts:
+          type: object
+          required: [have, partial, missing]
+          properties:
+            have: {type: integer, description: Уровень 1}
+            partial: {type: integer, description: 'Уровень 0,5'}
+            missing: {type: integer, description: Уровень 0}
+        top_gaps:
+          type: array
+          maxItems: 3
+          description: Три пробела с самым большим весом
+          items: {$ref: '#/components/schemas/MissingSkill'}
+
+    Plan:
+      type: object
+      required: [id, profession_slug, version_no, built_by, created_at, hours_per_week, deadline, total_hours,
+                 ready_date, late, hours_per_week_needed, match_before, match_after, progress, current_item_id, items]
+      properties:
+        id: {type: integer, format: int64}
+        profession_slug: {type: string}
+        version_no: {type: integer, description: 'Номер версии плана: 1, 2, …'}
+        built_by: {type: string, enum: [algorithm, ai]}
+        created_at: {type: string, format: date-time}
+        hours_per_week: {type: integer}
+        deadline: {type: [string, 'null'], format: date}
+        total_hours: {type: number, description: Сколько часов учиться по плану}
+        ready_date: {type: string, format: date, description: Ожидаемая дата готовности}
+        late: {type: boolean, description: Не успевает к дедлайну}
+        hours_per_week_needed: {type: [integer, 'null'], description: 'Сколько часов в неделю нужно, чтобы успеть к дедлайну (если late)'}
+        match_before: {type: [number, 'null'], description: '% соответствия сейчас (null — нет весов)'}
+        match_after: {type: [number, 'null'], description: '% соответствия после плана'}
+        progress:
+          type: object
+          required: [studied_hours, total_hours, percent]
+          properties:
+            studied_hours: {type: number}
+            total_hours: {type: number}
+            percent: {type: integer, description: Изученные часы / все часы плана}
+        current_item_id: {type: [integer, 'null'], format: int64, description: 'Текущий шаг: первая неизученная тема'}
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/PlanItem'}
+    PlanItem:
+      type: object
+      required: [id, sort_order, topic, hours, week_no, status, studied, skills]
+      properties:
+        id: {type: integer, format: int64}
+        sort_order: {type: integer}
+        topic:
+          type: object
+          required: [id, slug, title]
+          properties:
+            id: {type: integer, format: int64}
+            slug: {type: string}
+            title: {type: string}
+        hours: {type: number}
+        week_no: {type: integer, description: 'Неделя плана, в которую попадает тема'}
+        status: {type: string, enum: [to_learn, optional], description: 'optional — тема не обязательна для junior'}
+        studied: {type: boolean, description: Отмечена «Изучено» после построения плана}
+        skills: {type: array, items: {type: string}, description: Какие недостающие навыки закрывает}
+
+    WaitlistEntry:
+      type: object
+      required: [id, profession_slug, email, created_at]
+      properties:
+        id: {type: integer, format: int64}
+        profession_slug: {type: string}
+        email: {type: string, format: email}
+        user_id: {type: [integer, 'null'], format: int64}
+        created_at: {type: string, format: date-time}
+    UnknownTerm:
+      type: object
+      required: [id, term, occurrences, status, first_seen_at, last_seen_at]
+      properties:
+        id: {type: integer, format: int64}
+        term: {type: string}
+        occurrences: {type: integer, description: В скольких вакансиях встречается}
+        status: {type: string, enum: [new, became_skill, became_synonym, ignored]}
+        skill_id: {type: [integer, 'null'], format: int64}
+        first_seen_at: {type: string, format: date-time}
+        last_seen_at: {type: string, format: date-time}

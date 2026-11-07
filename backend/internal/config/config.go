@@ -19,6 +19,8 @@ type Config struct {
 	DatabaseURL string
 	// ShutdownTimeout — сколько ждать завершения запросов при остановке.
 	ShutdownTimeout time.Duration
+	// PublicURL — адрес сайта для ссылок в письмах (подтверждение почты, сброс пароля).
+	PublicURL string
 }
 
 // Load собирает конфиг из окружения и проверяет обязательные поля.
@@ -27,6 +29,7 @@ func Load() (Config, error) {
 		Env:         getEnv("APP_ENV", "local"),
 		HTTPAddr:    getEnv("HTTP_ADDR", ":8080"),
 		DatabaseURL: os.Getenv("DATABASE_URL"),
+		PublicURL:   getEnv("PUBLIC_URL", "http://localhost:3000"),
 	}
 
 	timeout, err := time.ParseDuration(getEnv("SHUTDOWN_TIMEOUT", "10s"))

@@ -15,11 +15,12 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"careernav/internal/mail"
 )
 
 const (
-	sessionTTL     = 30 * 24 * time.Hour
-	emailVerifyTTL = 48 * time.Hour
+	sessionTTL = 30 * 24 * time.Hour
 	// pdPolicyVersion — версия политики обработки ПД, на которую пользователь дал согласие.
 	// Поменять при выходе новой редакции документа.
 	pdPolicyVersion = "1.0"
@@ -41,12 +42,15 @@ type User struct {
 
 // Service — бизнес-логика аккаунта поверх PostgreSQL.
 type Service struct {
-	pool *pgxpool.Pool
-	log  *slog.Logger
+	pool      *pgxpool.Pool
+	log       *slog.Logger
+	mailer    mail.Mailer
+	publicURL string
 }
 
-func NewService(pool *pgxpool.Pool, log *slog.Logger) *Service {
-	return &Service{pool: pool, log: log}
+// NewService: publicURL — адрес сайта для ссылок в письмах.
+func NewService(pool *pgxpool.Pool, log *slog.Logger, mailer mail.Mailer, publicURL string) *Service {
+	return &Service{pool: pool, log: log, mailer: mailer, publicURL: publicURL}
 }
 
 // RegisterInput — проверенные данные формы регистрации.
@@ -92,13 +96,8 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (*User, string
 			}
 		}
 
-		verifyToken, err = newToken()
+		verifyToken, err = issueToken(ctx, tx, user.ID, tokenEmailVerify)
 		if err != nil {
-			return err
-		}
-		if _, err := tx.Exec(ctx, `
-			INSERT INTO auth_tokens (user_id, type, token_hash, expires_at) VALUES ($1, 'email_verify', $2, $3)`,
-			user.ID, hashToken(verifyToken), time.Now().Add(emailVerifyTTL)); err != nil {
 			return err
 		}
 
@@ -109,9 +108,7 @@ func (s *Service) Register(ctx context.Context, in RegisterInput) (*User, string
 		return nil, "", err
 	}
 
-	// Почтового сервиса пока нет: ссылку подтверждения пишем в журнал (эндпоинт — срез 1).
-	s.log.Info("письмо: подтверждение почты", "user_id", user.ID,
-		"link", "/api/v1/auth/verify-email?token="+verifyToken)
+	s.sendVerifyEmail(ctx, user.Email, verifyToken)
 	return &user, sessionToken, nil
 }
 

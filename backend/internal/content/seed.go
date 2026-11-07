@@ -3,6 +3,7 @@ package content
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"path"
@@ -24,6 +25,15 @@ type SeedData struct {
 	Skills      []seedSkill
 	Topics      []seedTopic
 	Professions []seedProfession
+	Questions   []seedQuestion
+}
+
+// seedQuestion — проверочный вопрос для ответа «уверенно» в оценке навыков.
+type seedQuestion struct {
+	Skill    string   `yaml:"skill"`
+	Question string   `yaml:"question"`
+	Options  []string `yaml:"options"`
+	Correct  int      `yaml:"correct"`
 }
 
 type seedSkill struct {
@@ -111,6 +121,14 @@ func LoadSeed(fsys fs.FS, dir string) (*SeedData, error) {
 				return nil, fmt.Errorf("%s: %w", name, err)
 			}
 			data.Skills = f.Skills
+		case "check-questions.yaml":
+			var f struct {
+				Questions []seedQuestion `yaml:"questions"`
+			}
+			if err := yaml.Unmarshal(raw, &f); err != nil {
+				return nil, fmt.Errorf("%s: %w", name, err)
+			}
+			data.Questions = f.Questions
 		case "topics-shared.yaml":
 			var f struct {
 				Topics []seedTopic `yaml:"topics"`
@@ -153,6 +171,15 @@ func (d *SeedData) validate() error {
 				return fmt.Errorf("синоним %q есть у навыков %q и %q", term, owner, s.Name)
 			}
 			terms[key] = s.Name
+		}
+	}
+
+	for _, q := range d.Questions {
+		if !skills[q.Skill] {
+			return fmt.Errorf("проверочный вопрос: нет навыка %q в skills.yaml", q.Skill)
+		}
+		if len(q.Options) < 2 || q.Correct < 0 || q.Correct >= len(q.Options) {
+			return fmt.Errorf("проверочный вопрос к %q: нужно 2+ варианта и верный номер (с 0)", q.Skill)
 		}
 	}
 
@@ -245,7 +272,7 @@ func ApplySeed(ctx context.Context, pool *pgxpool.Pool, d *SeedData) error {
 				return fmt.Errorf("профессия %q: %w", p.Slug, err)
 			}
 		}
-		return nil
+		return applyQuestions(ctx, tx, d.Questions, skillIDs)
 	})
 }
 
@@ -348,6 +375,30 @@ func applyProfession(ctx context.Context, tx pgx.Tx, p seedProfession, skillIDs,
 				VALUES ($1, $2, $3, $4)`, blockID, topicIDs[bt.Slug], j+1, bt.Optional); err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+// applyQuestions заменяет вопросы навыков, упомянутых в YAML. На вопросы ничто не ссылается,
+// поэтому их можно пересоздавать: ответы оценки хранят только итог проверки.
+func applyQuestions(ctx context.Context, tx pgx.Tx, qs []seedQuestion, skillIDs map[string]int64) error {
+	done := map[string]bool{}
+	for _, q := range qs {
+		if !done[q.Skill] {
+			if _, err := tx.Exec(ctx, `DELETE FROM check_questions WHERE skill_id = $1`, skillIDs[q.Skill]); err != nil {
+				return err
+			}
+			done[q.Skill] = true
+		}
+		opts, err := json.Marshal(q.Options)
+		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO check_questions (skill_id, question, options, correct_option) VALUES ($1, $2, $3, $4)`,
+			skillIDs[q.Skill], q.Question, opts, q.Correct); err != nil {
+			return fmt.Errorf("проверочный вопрос к %q: %w", q.Skill, err)
 		}
 	}
 	return nil

@@ -63,6 +63,7 @@ type Resource struct {
 }
 
 // Catalog читает контент профессий.
+// pool открыт пакету: им же пользуется запись в лист ожидания.
 type Catalog struct {
 	pool *pgxpool.Pool
 }

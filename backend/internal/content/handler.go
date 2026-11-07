@@ -24,6 +24,7 @@ func NewHandler(catalog *Catalog, log *slog.Logger) *Handler {
 func (h *Handler) Register(api *gin.RouterGroup) {
 	api.GET("/professions", h.list)
 	api.GET("/professions/:slug", h.get)
+	api.POST("/waitlist", h.joinWaitlist)
 }
 
 func (h *Handler) list(c *gin.Context) {

@@ -50,11 +50,12 @@ services:
       db:
         condition: service_healthy
 
-  # Сервис аналитики (Python). Пока запускается вручную, расписание — в срезе 1:
-  #   docker compose run --rm collector load-superjob --profession qa-manual
+  # Сервис аналитики (Python): полный прогон сбора и анализа по расписанию (COLLECT_CRON, по умолчанию
+  # 1-го числа в 03:00 МСК). Разовый запуск: docker compose run --rm collector run-all
   collector:
     build: ./collector
-    profiles: ["tools"]
+    command: ["schedule"]
+    restart: unless-stopped
     env_file:
       - path: .env
         required: false

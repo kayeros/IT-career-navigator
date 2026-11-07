@@ -38,6 +38,10 @@ func (h *Handler) Register(api *gin.RouterGroup) {
 	api.POST("/auth/register", h.register)
 	api.POST("/auth/login", h.login)
 	api.POST("/auth/logout", h.logout)
+	api.POST("/auth/verify-email", h.verifyEmail)
+	api.POST("/auth/verify-email/resend", RequireUser, h.resendVerification)
+	api.POST("/auth/password-reset", h.requestPasswordReset)
+	api.POST("/auth/password-reset/confirm", h.confirmPasswordReset)
 	api.GET("/me", RequireUser, h.me)
 }
 
@@ -71,6 +75,15 @@ func CurrentUser(c *gin.Context) *User {
 func RequireUser(c *gin.Context) {
 	if CurrentUser(c) == nil {
 		httpx.Unauthorized(c)
+		return
+	}
+	c.Next()
+}
+
+// RequireAdmin пускает только роль admin (ставить после RequireUser).
+func RequireAdmin(c *gin.Context) {
+	if u := CurrentUser(c); u == nil || u.Role != "admin" {
+		httpx.Error(c, http.StatusForbidden, "forbidden", "Нужны права администратора")
 		return
 	}
 	c.Next()
@@ -179,6 +192,92 @@ func (h *Handler) logout(c *gin.Context) {
 			httpx.Internal(c, h.log, err)
 			return
 		}
+	}
+	h.setSessionCookie(c, "", -1)
+	c.Status(http.StatusNoContent)
+}
+
+func invalidToken(c *gin.Context) {
+	httpx.Error(c, http.StatusBadRequest, "invalid_token", "Ссылка неверная, устарела или уже использована. Запросите новую.")
+}
+
+func (h *Handler) verifyEmail(c *gin.Context) {
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || req.Token == "" {
+		invalidToken(c)
+		return
+	}
+	err := h.svc.VerifyEmail(c.Request.Context(), req.Token)
+	if errors.Is(err, ErrInvalidToken) {
+		invalidToken(c)
+		return
+	}
+	if err != nil {
+		httpx.Internal(c, h.log, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *Handler) resendVerification(c *gin.Context) {
+	err := h.svc.ResendVerification(c.Request.Context(), CurrentUser(c))
+	var soon TooSoonError
+	switch {
+	case errors.Is(err, ErrAlreadyVerified):
+		httpx.Error(c, http.StatusConflict, "already_verified", "Почта уже подтверждена")
+	case errors.As(err, &soon):
+		c.Header("Retry-After", strconv.Itoa(int(soon.RetryAfter.Seconds())+1))
+		httpx.Error(c, http.StatusTooManyRequests, "too_many_requests", "Письмо уже отправлено, повторить можно через минуту")
+	case err != nil:
+		httpx.Internal(c, h.log, err)
+	default:
+		c.Status(http.StatusNoContent)
+	}
+}
+
+func (h *Handler) requestPasswordReset(c *gin.Context) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		httpx.Validation(c, map[string]string{"body": "Некорректный JSON"})
+		return
+	}
+	req.Email = normalizeEmail(req.Email)
+	if !validEmail(req.Email) {
+		httpx.Validation(c, map[string]string{"email": "Укажите корректную почту"})
+		return
+	}
+	if err := h.svc.RequestPasswordReset(c.Request.Context(), req.Email); err != nil {
+		httpx.Internal(c, h.log, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *Handler) confirmPasswordReset(c *gin.Context) {
+	var req struct {
+		Token    string `json:"token"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || req.Token == "" {
+		invalidToken(c)
+		return
+	}
+	if n := utf8.RuneCountInString(req.Password); n < 8 || n > 128 {
+		httpx.Validation(c, map[string]string{"password": "Пароль должен быть от 8 до 128 символов"})
+		return
+	}
+	err := h.svc.ConfirmPasswordReset(c.Request.Context(), req.Token, req.Password)
+	if errors.Is(err, ErrInvalidToken) {
+		invalidToken(c)
+		return
+	}
+	if err != nil {
+		httpx.Internal(c, h.log, err)
+		return
 	}
 	h.setSessionCookie(c, "", -1)
 	c.Status(http.StatusNoContent)
