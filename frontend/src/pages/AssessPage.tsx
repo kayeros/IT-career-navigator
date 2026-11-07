@@ -132,27 +132,28 @@ function AssessFlow({
   };
 
   return (
-    <div className="quiz">
-      <div className="row between">
+    <div className="quiz assess">
+      <div className="assess-top">
         <Link to={`/professions/${slug}`} className="btn link fs-13">
           ← К карте профессии
         </Link>
-        <span className="muted fs-13">Ответы сохраняются — можно продолжить позже</span>
+        <span className="muted fs-13">Ответы сохраняются, можно продолжить позже</span>
       </div>
-      <span className="eyebrow mt-12 block">
-        Оценка навыков · {title} · навык {step + 1} из {total}
-      </span>
+      <div className="assess-head">
+        <span className="eyebrow">Оценка навыков · {title}</span>
+        <span className="assess-count">
+          навык {step + 1} из {total}
+        </span>
+      </div>
       <div
-        className="progress mt-12"
+        className="assess-meter"
         role="progressbar"
         aria-label="Отвечено навыков"
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={answered}
       >
-        {assessment.skills.map((s, i) => (
-          <i key={s.skill_id} className={s.answer ? "on" : i === step ? "cur" : ""} />
-        ))}
+        <i style={{ width: `${total ? (answered / total) * 100 : 0}%` }} />
       </div>
       {/* key: при смене навыка форма начинается с его сохранённого ответа */}
       <SkillStep
@@ -195,19 +196,19 @@ function SkillStep({
 
   return (
     <form
-      className="panel stack gap-18"
+      className="panel assess-card"
       onSubmit={(e) => {
         e.preventDefault();
         if (ready && level) onSubmit(level, level === "confident" && q ? (option ?? 0) : null);
       }}
     >
-      <fieldset className="stack gap-12">
+      <fieldset className="assess-set">
         <legend className="assess-q">
           Как вы владеете навыком <b>«{skill.name}»</b>?
         </legend>
-        <div className="opts">
-          {LEVELS.map(([v, t, hint]) => (
-            <label key={v} className="opt">
+        <div className="lvl-opts">
+          {LEVELS.map(([v, t, hint], i) => (
+            <label key={v} className="lvl-opt">
               <input
                 type="radio"
                 name="level"
@@ -215,9 +216,14 @@ function SkillStep({
                 checked={level === v}
                 onChange={() => setLevel(v)}
               />
-              <span className="stack gap-2">
-                <b className="fs-15">{t}</b>
-                <span className="muted fs-13">{hint}</span>
+              <span className={`lvl-bars l${i}`} aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              <span className="lvl-text">
+                <b>{t}</b>
+                <span className="muted">{hint}</span>
               </span>
             </label>
           ))}
@@ -252,12 +258,14 @@ function SkillStep({
 
       {error && <Banner tone="error">{error}</Banner>}
 
-      <div className="row between">
-        <Button variant="ghost" disabled={first || busy} onClick={onBack}>
-          Назад
-        </Button>
+      <div className="assess-actions">
+        {!first && (
+          <Button variant="link" disabled={busy} onClick={onBack}>
+            ← Назад
+          </Button>
+        )}
         <Button type="submit" disabled={!ready} loading={busy}>
-          {last ? "Завершить и посмотреть отчёт" : "Дальше"}
+          {last ? "Завершить и посмотреть отчёт" : "Дальше →"}
         </Button>
       </div>
     </form>
