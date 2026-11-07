@@ -814,18 +814,72 @@ a.chip {
 }
 
 /* --- плашка «Подтвердите почту» --- */
-.verify-banner {
-  background: var(--amber-soft);
-  border-bottom: 1px solid color-mix(in srgb, var(--amber) 40%, transparent);
-  font-size: 14px;
+.verify-wrap {
+  padding-top: 16px;
 }
-.verify-in {
+.verify-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 10px;
+  gap: 14px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 14px;
+}
+.verify-ico {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+.verify-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
   flex-wrap: wrap;
+  column-gap: 10px;
+  row-gap: 2px;
+}
+.verify-mail {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.verify-card .btn.link {
+  flex: none;
+  white-space: nowrap;
+}
+.verify-close {
+  border-color: transparent !important;
+  background: none !important;
+  color: var(--muted) !important;
+  flex: none;
+  font-size: 20px;
+  line-height: 1;
+}
+@media (max-width: 560px) {
+  .verify-card {
+    position: relative;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding-right: 40px;
+  }
+  .verify-text {
+    flex-basis: calc(100% - 48px);
+  }
+  .verify-card .btn.link {
+    margin-left: 48px;
+    padding-left: 0;
+  }
+  .verify-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
 }
 
 /* --- онбординг --- */
@@ -1376,5 +1430,167 @@ input[type="range"] {
     margin-left: 0;
     flex-basis: 100%;
     margin-top: 4px;
+  }
+}
+
+/* --- оценка навыков --- */
+.assess {
+  max-width: 680px;
+}
+.assess-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}
+.assess-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 20px;
+}
+.assess-count {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.assess-meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sunk);
+  overflow: hidden;
+  margin: 10px 0 20px;
+}
+.assess-meter i {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+.assess-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+}
+.assess-set {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.assess-set .assess-q {
+  margin-bottom: 16px;
+}
+.lvl-opts {
+  display: grid;
+  gap: 10px;
+}
+.lvl-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.lvl-opt:hover {
+  border-color: var(--muted);
+}
+.lvl-opt:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.lvl-opt:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.lvl-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.lvl-bars {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  width: 28px;
+  height: 22px;
+}
+.lvl-bars i {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--sunk);
+}
+.lvl-bars i:nth-child(1) {
+  height: 40%;
+}
+.lvl-bars i:nth-child(2) {
+  height: 70%;
+}
+.lvl-bars i:nth-child(3) {
+  height: 100%;
+}
+.lvl-bars.l0 i:nth-child(1),
+.lvl-bars.l1 i:nth-child(-n + 2),
+.lvl-bars.l2 i {
+  background: var(--muted);
+}
+.lvl-opt:has(input:checked) .lvl-bars.l0 i:nth-child(1),
+.lvl-opt:has(input:checked) .lvl-bars.l1 i:nth-child(-n + 2),
+.lvl-opt:has(input:checked) .lvl-bars.l2 i {
+  background: var(--accent);
+}
+.lvl-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lvl-text b {
+  font-size: 15px;
+}
+.lvl-text .muted {
+  font-size: 13.5px;
+}
+.assess-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+.assess-actions .btn.link {
+  margin-right: auto;
+}
+@media (max-width: 560px) {
+  .assess-card {
+    padding: 20px 16px;
+  }
+  .assess-actions .btn.primary {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- место под плашку cookie: отступ внутри подвала, а не пустая полоса под ним --- */
+body.has-cookie {
+  padding-bottom: 0;
+}
+body.has-cookie footer {
+  padding-bottom: calc(32px + 72px);
+}
+@media (max-width: 820px) {
+  body.has-cookie footer {
+    padding-bottom: calc(32px + 130px);
   }
 }
