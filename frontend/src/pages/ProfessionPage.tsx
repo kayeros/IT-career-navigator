@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "../api/client";
 import type { ProfessionDetail, Topic } from "../api/types";
@@ -6,7 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { useToast } from "../components/toastContext";
 import { LoadingLabel, Skeleton } from "../components/Skeleton";
 import { useAuth } from "../features/auth/useAuth";
-import { MatchPanel } from "../features/match/MatchPanel";
+import { ProfessionSummary } from "../features/match/ProfessionSummary";
 import { useProfession } from "../features/profession/useProfession";
 import { useToggleStudied } from "../features/profession/useToggleStudied";
 import { RoadmapMap, type Selection } from "../features/roadmap/RoadmapMap";
@@ -111,10 +111,12 @@ export default function ProfessionPage() {
 
   const topicsTotal = new Set(data.blocks.flatMap((b) => b.topics.map((t) => t.id))).size;
   const pr = data.progress;
-  const pct = pr && pr.total ? Math.round((pr.studied / pr.total) * 100) : 0;
   const soon = data.status === "soon";
   const totalHours = planTiming(buildPlan({ ...data, blocks: data.blocks.map(unstudy) }), 1).total;
   const leftHours = planTiming(buildPlan(data), 1).total;
+  const topicHours = new Map(
+    data.blocks.flatMap((b) => b.topics.map((t) => [t.slug, t.hours] as const)),
+  );
   const loginHref = `/login?next=${encodeURIComponent(location.pathname + location.hash)}`;
 
   return (
@@ -175,33 +177,12 @@ export default function ProfessionPage() {
       ) : (
         <>
           {pr ? (
-            <div className="prof-summary">
-              <div className="panel prof-progress">
-                <div className="ring ring-sm ring-good" style={{ "--p": pct } as CSSProperties}>
-                  <b className="big-badge">{pct}%</b>
-                </div>
-                <div className="stack gap-6 min-0">
-                  <span className="eyebrow">Ваш прогресс</span>
-                  <b className="fs-16">
-                    Изучено {pr.studied} из {pr.total}
-                  </b>
-                  <span className="muted fs-14">
-                    {leftHours > 0
-                      ? `Осталось ≈${Math.round(leftHours)} ч обязательных тем`
-                      : "Все обязательные темы изучены"}
-                  </span>
-                  <span
-                    className="sr-only"
-                    role="progressbar"
-                    aria-label="Изучено тем"
-                    aria-valuemin={0}
-                    aria-valuemax={pr.total}
-                    aria-valuenow={pr.studied}
-                  />
-                </div>
-              </div>
-              <MatchPanel slug={slug} loggedIn={loggedIn} />
-            </div>
+            <ProfessionSummary
+              slug={slug}
+              progress={pr}
+              leftHours={leftHours}
+              topicHours={topicHours}
+            />
           ) : (
             <div className="prof-guest panel">
               <div className="stack gap-6 min-0">

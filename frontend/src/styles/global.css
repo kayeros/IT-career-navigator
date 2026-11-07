@@ -91,6 +91,21 @@
 .f-links a:hover {
   color: var(--ink);
 }
+/* кружки перед ссылками подвала, как в прототипе */
+.f-info a {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+}
+.f-info a::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  transform: translateY(-1px);
+}
 a.pcard {
   color: inherit;
   text-decoration: none;
@@ -444,18 +459,6 @@ a.pcard:hover .pc-go {
   flex: 1 1 auto;
   justify-content: center;
 }
-.prof-summary {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 18px;
-  margin-bottom: 28px;
-  align-items: stretch;
-}
-.prof-progress {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
 .ring.ring-good {
   background: conic-gradient(var(--good) calc(var(--p) * 1%), var(--sunk) 0);
 }
@@ -581,9 +584,6 @@ a.miss-item:hover .miss-name {
   }
   .prof-hero-side {
     min-width: 0;
-  }
-  .prof-summary {
-    grid-template-columns: minmax(0, 1fr);
   }
   .prof-guest {
     flex-direction: column;
@@ -1251,5 +1251,130 @@ input[type="range"] {
   }
   .dash-cells .stat b {
     font-size: 16px;
+  }
+}
+
+/* --- сводка над картой профессии: следующий шаг --- */
+.prof-next {
+  display: grid;
+  gap: 16px;
+  padding: 22px 24px;
+  margin-bottom: 28px;
+}
+.ps-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+.ps-stat {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.ps-num {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+.ps-bar {
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sunk);
+  overflow: hidden;
+  margin-left: 4px;
+}
+.ps-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.ps-bar.good i {
+  background: var(--good);
+}
+.ps-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  background: var(--accent-soft);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.ps-step small {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ps-step h3 {
+  margin: 4px 0 2px;
+  font-family: var(--f-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.ps-step p {
+  margin: 0;
+  font-size: 14px;
+}
+.ps-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.ps-assess {
+  margin-left: auto;
+  font-weight: 500;
+}
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 13.5px;
+  font-weight: 500;
+  background: var(--sunk);
+  color: var(--ink);
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--f-body);
+}
+.skill-chip:hover {
+  border-color: var(--accent);
+}
+.skill-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.skill-chip i {
+  font-style: normal;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .prof-next {
+    padding: 18px;
+  }
+  .ps-step {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+  .ps-step .btn {
+    justify-self: start;
+  }
+  .ps-assess {
+    margin-left: 0;
+    flex-basis: 100%;
+    margin-top: 4px;
   }
 }

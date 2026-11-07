@@ -34,6 +34,9 @@ const TermsAdmin = lazy(() => import("./pages/admin/TermsAdmin"));
 const WaitlistAdmin = lazy(() => import("./pages/admin/WaitlistAdmin"));
 const QuizPage = lazy(() => import("./pages/QuizPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const auth = (el: ReactNode) => <RequireAuth>{el}</RequireAuth>;
@@ -73,6 +76,9 @@ export const routes = [
       { path: "/verify-email", element: <VerifyEmailPage /> },
       { path: "/quiz", element: <QuizPage /> },
       { path: "/privacy", element: <PrivacyPage /> },
+      { path: "/terms", element: <TermsPage /> },
+      { path: "/about", element: <AboutPage /> },
+      { path: "/pricing", element: <PricingPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

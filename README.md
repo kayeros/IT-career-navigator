@@ -55,3 +55,29 @@ docker compose exec api /app/api seed
 ```
 
 API — `http://localhost:8080/api/v1`, проверка — `http://localhost:8080/health`, демо-страница API — `http://localhost:8080/demo/`.
+
+### Локальный запуск фронтенда
+
+Нужен Node.js 20.19+ или 22.12+ (проверить: `node -v`).
+
+1. Поднимите бэкенд (раздел выше) и создайте себе админа, если нужна админка:
+
+   ```bash
+   docker compose exec api /app/api create-admin you@example.ru
+   ```
+
+   Почту сначала зарегистрируйте на сайте, потом выполните команду. В Git Bash перед `docker compose exec` добавьте `MSYS_NO_PATHCONV=1`.
+
+2. Во втором терминале запустите фронтенд:
+
+   ```bash
+   cd frontend
+   npm ci          # один раз, ставит зависимости
+   npm run dev
+   ```
+
+3. Откройте http://localhost:5173. Если страница не открывается, попробуйте http://127.0.0.1:5173. Запросы к `/api` Vite сам передаёт бэкенду на `localhost:8080`.
+
+Без бэкенда фронтенд работает на мок-сервере: вместо шага 1 запустите `node mock/server.mjs` из папки `frontend` (порт 8080, данные в памяти). Демо-аккаунт: `demo@example.ru` / `demo1234`, с правами админа.
+
+Остальные команды (сборка, тесты, линтер, генерация типов из `api/openapi.yaml`) и описание экранов — в [`frontend/README.md`](frontend/README.md).

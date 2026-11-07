@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { DocNav } from "../components/DocNav";
 
 /** Политика конфиденциальности. Юридический текст готовит команда; здесь — каркас разделов из прототипа. */
 const SECTIONS: [string, string][] = [
@@ -27,12 +27,7 @@ const SECTIONS: [string, string][] = [
 export default function PrivacyPage() {
   return (
     <div className="doc">
-      <nav className="doc-nav" aria-label="Информация">
-        <span className="eyebrow">Информация</span>
-        <Link to="/privacy" className="on" aria-current="page">
-          Политика конфиденциальности
-        </Link>
-      </nav>
+      <DocNav />
       <article className="doc-body">
         <h1>Политика конфиденциальности</h1>
         <p className="doc-date">Черновик</p>
