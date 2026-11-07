@@ -1,0 +1,160 @@
+# ЧЕРНОВИК. Правит Рустам (темы, навыки) и Алик (материалы).
+slug: python-developer
+title: Python-разработчик
+description: "Пишет серверную часть сайтов и сервисов на Python: API, работу с базами данных, фоновые задачи."
+for_whom: Тем, кто хочет программировать и начать с языка с понятным синтаксисом.
+sort_order: 2
+
+key_skills:
+  - Python
+  - ООП
+  - Git
+  - Linux
+  - Poetry
+  - pytest
+  - SQL
+  - PostgreSQL
+  - SQLAlchemy
+  - Alembic
+  - Redis
+  - HTTP
+  - REST API
+  - FastAPI
+  - Django
+  - Django REST Framework
+  - Flask
+  - Docker
+  - asyncio
+  - Celery
+  - CI/CD
+
+topics:
+  - slug: python-syntax
+    title: Синтаксис Python
+    description: Переменные, типы, условия, циклы, строки.
+    hours: 30
+    skills: [Python]
+    resources:
+      - {title: "Поколение Python: курс для начинающих (Stepik)", url: "https://stepik.org/course/58852", type: course, language: ru}
+      - {title: "Официальный учебник Python", url: "https://docs.python.org/3/tutorial/", type: docs, language: en}
+  - slug: python-data-structures
+    title: Структуры данных в Python
+    description: Списки, словари, множества, кортежи, генераторы.
+    hours: 15
+    skills: [Python]
+    resources:
+      - {title: "Python: Data Structures", url: "https://docs.python.org/3/tutorial/datastructures.html", type: docs, language: en}
+  - slug: python-functions-modules
+    title: Функции и модули
+    description: Аргументы, области видимости, декораторы, импорт, стандартная библиотека.
+    hours: 15
+    skills: [Python]
+    resources:
+      - {title: "Программирование на Python (Stepik)", url: "https://stepik.org/course/67", type: course, language: ru}
+  - slug: python-errors-files
+    title: Исключения и работа с файлами
+    description: try/except, свои исключения, чтение и запись файлов.
+    hours: 8
+    skills: [Python]
+    resources:
+      - {title: "Python: Errors and Exceptions", url: "https://docs.python.org/3/tutorial/errors.html", type: docs, language: en}
+  - slug: python-env-packages
+    title: Виртуальные окружения и зависимости
+    description: venv, pip, Poetry, файл зависимостей проекта.
+    hours: 4
+    skills: [Poetry]
+    resources:
+      - {title: "Python: venv", url: "https://docs.python.org/3/library/venv.html", type: docs, language: en}
+      - {title: "Poetry: документация", url: "https://python-poetry.org/docs/", type: docs, language: en}
+  - slug: python-pytest
+    title: Тесты на pytest
+    description: Написание тестов, фикстуры, параметризация, моки.
+    hours: 10
+    skills: [pytest]
+    resources:
+      - {title: "pytest: Get Started", url: "https://docs.pytest.org/en/stable/getting-started.html", type: docs, language: en}
+  - slug: python-sqlalchemy
+    title: SQLAlchemy и Alembic
+    description: ORM, модели, сессии, миграции схемы.
+    hours: 15
+    skills: [SQLAlchemy, Alembic]
+    resources:
+      - {title: "SQLAlchemy Unified Tutorial", url: "https://docs.sqlalchemy.org/en/20/tutorial/", type: docs, language: en}
+      - {title: "Alembic: Tutorial", url: "https://alembic.sqlalchemy.org/en/latest/tutorial.html", type: docs, language: en}
+  - slug: redis-basics
+    title: Redis и кэширование
+    description: Типы данных, срок жизни ключей, кэш в веб-приложении.
+    hours: 6
+    skills: [Redis]
+    resources:
+      - {title: "Redis: документация", url: "https://redis.io/docs/latest/", type: docs, language: en}
+  - slug: python-fastapi
+    title: FastAPI
+    description: Маршруты, валидация через Pydantic, зависимости, документация API.
+    hours: 20
+    skills: [FastAPI]
+    resources:
+      - {title: "FastAPI: учебник", url: "https://fastapi.tiangolo.com/ru/tutorial/", type: docs, language: ru}
+  - slug: python-django
+    title: Django и Django REST Framework
+    description: Модели, представления, админка, сериализаторы, REST API.
+    hours: 30
+    skills: [Django, Django REST Framework]
+    resources:
+      - {title: "Django: учебник", url: "https://docs.djangoproject.com/en/stable/intro/tutorial01/", type: docs, language: en}
+      - {title: "Django REST Framework: Tutorial", url: "https://www.django-rest-framework.org/tutorial/quickstart/", type: docs, language: en}
+  - slug: python-flask
+    title: Flask
+    description: Минимальное веб-приложение, маршруты и шаблоны.
+    hours: 8
+    skills: [Flask]
+    resources:
+      - {title: "Flask: Quickstart", url: "https://flask.palletsprojects.com/en/stable/quickstart/", type: docs, language: en}
+  - slug: python-asyncio
+    title: Асинхронность и asyncio
+    description: Корутины, event loop, async/await, когда это нужно.
+    hours: 10
+    skills: [asyncio]
+    resources:
+      - {title: "Python: asyncio", url: "https://docs.python.org/3/library/asyncio.html", type: docs, language: en}
+  - slug: python-celery
+    title: Фоновые задачи и Celery
+    description: Очереди, воркеры, отложенные и периодические задачи.
+    hours: 6
+    skills: [Celery]
+    resources:
+      - {title: "Celery: First Steps", url: "https://docs.celeryq.dev/en/stable/getting-started/first-steps-with-celery.html", type: docs, language: en}
+
+blocks:
+  - title: Основы языка
+    topics:
+      - python-syntax
+      - python-data-structures
+      - python-functions-modules
+      - python-errors-files
+      - oop-basics
+  - title: Инструменты разработчика
+    topics:
+      - git-basics
+      - linux-basics
+      - python-env-packages
+      - python-pytest
+  - title: Базы данных
+    topics:
+      - sql-basics
+      - postgresql-basics
+      - python-sqlalchemy
+      - redis-basics
+  - title: Веб-разработка
+    topics:
+      - http-basics
+      - rest-api-design
+      - python-fastapi
+      - python-django
+      - {slug: python-flask, optional: true}
+  - title: Инфраструктура и продвинутые темы
+    topics:
+      - docker-basics
+      - python-asyncio
+      - python-celery
+      - ci-cd-basics

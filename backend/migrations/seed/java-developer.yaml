@@ -1,0 +1,173 @@
+# ЧЕРНОВИК. Правит Рустам (темы, навыки) и Алик (материалы).
+slug: java-developer
+title: Java-разработчик
+description: "Пишет серверную часть больших систем на Java и Spring: банки, маркетплейсы, корпоративные сервисы."
+for_whom: Тем, кто готов к более строгому языку и хочет работать над крупными проектами.
+sort_order: 3
+
+key_skills:
+  - Java
+  - ООП
+  - Java Collections
+  - Stream API
+  - Многопоточность
+  - Git
+  - Linux
+  - Maven
+  - Gradle
+  - JUnit
+  - Mockito
+  - SQL
+  - PostgreSQL
+  - JDBC
+  - Hibernate
+  - Миграции БД
+  - HTTP
+  - REST API
+  - Spring Framework
+  - Spring Boot
+  - Spring Data
+  - Spring Security
+  - Docker
+  - Kafka
+  - CI/CD
+
+topics:
+  - slug: java-syntax
+    title: Синтаксис Java
+    description: Типы, условия, циклы, массивы, строки, методы.
+    hours: 30
+    skills: [Java]
+    resources:
+      - {title: "Java. Базовый курс (Stepik)", url: "https://stepik.org/course/187", type: course, language: ru}
+      - {title: "Learn Java (dev.java)", url: "https://dev.java/learn/", type: docs, language: en}
+  - slug: java-exceptions
+    title: Исключения в Java
+    description: Проверяемые и непроверяемые исключения, try-with-resources.
+    hours: 5
+    skills: [Java]
+    resources:
+      - {title: "dev.java: Exceptions", url: "https://dev.java/learn/exceptions/", type: docs, language: en}
+  - slug: java-collections
+    title: Коллекции
+    description: List, Set, Map, выбор реализации, сравнение объектов.
+    hours: 15
+    skills: [Java Collections]
+    resources:
+      - {title: "dev.java: The Collections Framework", url: "https://dev.java/learn/api/collections-framework/", type: docs, language: en}
+  - slug: java-streams
+    title: Лямбды и Stream API
+    description: Функциональные интерфейсы, map/filter/collect.
+    hours: 10
+    skills: [Stream API]
+    resources:
+      - {title: "dev.java: The Stream API", url: "https://dev.java/learn/api/streams/", type: docs, language: en}
+  - slug: java-concurrency
+    title: Основы многопоточности
+    description: Потоки, синхронизация, ExecutorService.
+    hours: 15
+    skills: [Многопоточность]
+    resources:
+      - {title: "Oracle: Concurrency", url: "https://docs.oracle.com/javase/tutorial/essential/concurrency/", type: docs, language: en}
+  - slug: java-build-tools
+    title: "Сборка: Maven и Gradle"
+    description: Зависимости, жизненный цикл сборки, структура проекта.
+    hours: 6
+    skills: [Maven, Gradle]
+    resources:
+      - {title: "Maven: Getting Started", url: "https://maven.apache.org/guides/getting-started/", type: docs, language: en}
+      - {title: "Gradle: Getting Started", url: "https://docs.gradle.org/current/userguide/getting_started_eng.html", type: docs, language: en}
+  - slug: java-testing
+    title: "Тесты: JUnit и Mockito"
+    description: Модульные тесты, моки, тестирование Spring-приложений.
+    hours: 10
+    skills: [JUnit, Mockito]
+    resources:
+      - {title: "JUnit 5 User Guide", url: "https://junit.org/junit5/docs/current/user-guide/", type: docs, language: en}
+      - {title: "Spring: Testing the Web Layer", url: "https://spring.io/guides/gs/testing-web", type: docs, language: en}
+  - slug: java-jdbc-hibernate
+    title: JDBC и Hibernate
+    description: Подключение к базе, ORM, сущности и связи, проблема N+1.
+    hours: 20
+    skills: [JDBC, Hibernate]
+    resources:
+      - {title: "Spring: Accessing Relational Data using JDBC", url: "https://spring.io/guides/gs/relational-data-access", type: docs, language: en}
+      - {title: "Hibernate: Getting Started", url: "https://docs.jboss.org/hibernate/orm/current/quickstart/html_single/", type: docs, language: en}
+  - slug: db-migrations
+    title: Миграции базы данных
+    description: Зачем нужны миграции, Liquibase и Flyway.
+    hours: 3
+    skills: [Миграции БД]
+    resources:
+      - {title: "Spring: Accessing Data with JPA", url: "https://spring.io/guides/gs/accessing-data-jpa", type: docs, language: en}
+  - slug: spring-core
+    title: "Spring Framework: основы"
+    description: IoC-контейнер, бины, внедрение зависимостей.
+    hours: 15
+    skills: [Spring Framework]
+    resources:
+      - {title: "Spring Framework: документация", url: "https://docs.spring.io/spring-framework/reference/core/beans.html", type: docs, language: en}
+  - slug: spring-boot
+    title: Spring Boot и REST-сервис
+    description: Создание проекта, контроллеры, конфигурация, обработка ошибок.
+    hours: 20
+    skills: [Spring Boot]
+    resources:
+      - {title: "Spring: Building an Application with Spring Boot", url: "https://spring.io/guides/gs/spring-boot", type: docs, language: en}
+      - {title: "Spring: Building a RESTful Web Service", url: "https://spring.io/guides/gs/rest-service", type: docs, language: en}
+  - slug: spring-data
+    title: Spring Data
+    description: Репозитории, запросы, транзакции.
+    hours: 10
+    skills: [Spring Data]
+    resources:
+      - {title: "Spring: Accessing Data with JPA", url: "https://spring.io/guides/gs/accessing-data-jpa", type: docs, language: en}
+  - slug: spring-security
+    title: Spring Security
+    description: Аутентификация, авторизация, защита эндпоинтов.
+    hours: 10
+    skills: [Spring Security]
+    resources:
+      - {title: "Spring: Securing a Web Application", url: "https://spring.io/guides/gs/securing-web", type: docs, language: en}
+  - slug: kafka-basics
+    title: Брокеры сообщений и Kafka
+    description: Топики, продюсеры, консьюмеры, зачем нужны очереди.
+    hours: 8
+    skills: [Kafka]
+    resources:
+      - {title: "Apache Kafka: Quickstart", url: "https://kafka.apache.org/quickstart", type: docs, language: en}
+
+blocks:
+  - title: Java Core
+    topics:
+      - java-syntax
+      - oop-basics
+      - java-exceptions
+      - java-collections
+      - java-streams
+      - java-concurrency
+  - title: Инструменты разработчика
+    topics:
+      - git-basics
+      - linux-basics
+      - java-build-tools
+      - java-testing
+  - title: Базы данных
+    topics:
+      - sql-basics
+      - postgresql-basics
+      - java-jdbc-hibernate
+      - db-migrations
+  - title: Spring
+    topics:
+      - http-basics
+      - rest-api-design
+      - spring-core
+      - spring-boot
+      - spring-data
+      - spring-security
+  - title: Инфраструктура
+    topics:
+      - docker-basics
+      - ci-cd-basics
+      - {slug: kafka-basics, optional: true}

@@ -1,0 +1,398 @@
+<title>Карта переходов навигатора</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: role filter on top, a node graph of all pages (stages left to right) with a details panel, then global navigation, access rules and the full transitions table. Same tokens and faces as the site. */
+:root{
+  --bg:#E8ECF3; --surface:#FFFFFF; --sunk:#EEF1F6; --ink:#0D1220; --muted:#465065; --line:#C8D0DD;
+  --accent:#2446C8; --accent-soft:#DCE4FB;
+  --open:#16955E; --login:#C98207; --sub:#6D4BD8; --frozen:#4F7393; --data:#0B8A94;
+  --edge:#9AA4B8; --edge-dim:rgba(154,164,184,.18);
+  --sh:0 1px 2px rgba(13,18,32,.06),0 8px 22px rgba(13,18,32,.07);
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E121A; --surface:#161C27; --sunk:#1C2330; --ink:#E6E9F0; --muted:#97A0B2; --line:#283041;
+  --accent:#7090FF; --accent-soft:#1D2744; --open:#4CC28E; --login:#F0B13A; --sub:#A78BFA; --frozen:#8FB0CF; --data:#3CC7D1;
+  --edge:#566179; --edge-dim:rgba(86,97,121,.22); --sh:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E121A; --surface:#161C27; --sunk:#1C2330; --ink:#E6E9F0; --muted:#97A0B2; --line:#283041;
+  --accent:#7090FF; --accent-soft:#1D2744; --open:#4CC28E; --login:#F0B13A; --sub:#A78BFA; --frozen:#8FB0CF; --data:#3CC7D1;
+  --edge:#566179; --edge-dim:rgba(86,97,121,.22); --sh:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);margin:0}
+.page{max-width:1560px;margin:0 auto;padding-inline:24px;padding-block:36px 56px;display:flex;flex-direction:column;gap:26px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,3.2vw,38px)}
+h2{font-size:19px}
+h3{font-size:15px}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px}
+.head-t{display:flex;flex-direction:column;gap:8px;min-width:0;max-width:680px}
+.head-t p{color:var(--muted)}
+.roles{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.roles button{font:inherit;font-size:14px;font-weight:500;border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.roles button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.roles button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.c-open{--c:var(--open)} .c-login{--c:var(--login)} .c-sub{--c:var(--sub)} .c-frozen{--c:var(--frozen)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+
+/* graph + panel */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.graph-wrap{overflow-x:auto;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh)}
+svg.graph{display:block;width:100%;min-width:1080px;height:auto}
+.stage-l{font-family:var(--f-display);font-size:13px;font-weight:600;fill:var(--ink)}
+.stage-s{font-family:var(--f-mono);font-size:10.5px;fill:var(--muted)}
+.lane{fill:var(--sunk)}
+.e{fill:none;stroke:var(--edge);stroke-width:1.4;transition:stroke .15s,opacity .15s}
+.e.legal{stroke-dasharray:4 4}
+.graph.focus .e{opacity:.12}
+.graph.focus .e.on{opacity:1;stroke:var(--accent);stroke-width:2.2}
+.graph.focus .e.in{opacity:1;stroke:var(--login);stroke-width:2}
+.ah{fill:var(--edge)} .ah-on{fill:var(--accent)} .ah-in{fill:var(--login)}
+.d{fill:none;stroke:var(--data);stroke-width:1.6;stroke-dasharray:2 4;stroke-linecap:round;transition:opacity .15s}
+.graph.focus .d{opacity:.15}
+.graph.focus .d.on,.graph.focus .d.in{opacity:1;stroke-width:2.4}
+.ad{fill:var(--data)}
+.c-data{--c:var(--data)}
+.tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.toggle{font:inherit;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:9px;padding:9px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.toggle[aria-pressed="true"]{background:var(--data);border-color:var(--data);color:var(--surface)}
+.toggle[aria-pressed="true"] .dot{--c:var(--surface)}
+.toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lk.data{cursor:pointer;box-shadow:inset 3px 0 0 var(--data)}
+.lk .dto{font-size:12.5px;color:var(--data);white-space:nowrap}
+td.dto{color:var(--data);white-space:nowrap}
+.n{cursor:pointer}
+.n rect.box{fill:var(--surface);stroke:var(--line);stroke-width:1.2;transition:stroke .15s}
+.n:hover rect.box,.n:focus-visible rect.box{stroke:var(--accent)}
+.n:focus{outline:none}
+.n.sel rect.box{stroke:var(--accent);stroke-width:2.2;fill:var(--accent-soft)}
+.graph.focus .n:not(.sel):not(.rel){opacity:.35}
+.n text.num{font-family:var(--f-body);font-size:11px;font-weight:600;fill:var(--accent)}
+.n text.t{font-family:var(--f-body);font-size:12.5px;font-weight:600;fill:var(--ink)}
+.n text.cnt{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+.n circle{fill:var(--c)}
+
+.panel{position:sticky;top:16px;display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh);max-height:calc(100vh - 32px);overflow:auto}
+.panel-h{display:flex;flex-direction:column;gap:6px}
+.panel-h h2{display:flex;align-items:center;gap:10px;font-size:18px}
+.num-b{font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:2px 7px}
+.acc{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:6px}
+.list h3{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.lk{display:grid;grid-template-columns:1fr;gap:3px;align-items:start;padding:9px 11px;border-radius:10px;background:var(--sunk);border:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.lk:hover{outline:1px solid var(--accent)}
+.lk.rule{grid-template-columns:1fr;cursor:default}.lk.rule:hover{outline:0}
+.lk b{font-size:13.5px;font-weight:600}
+.lk .to{font-size:12.5px;color:var(--accent);white-space:nowrap}
+.lk .why{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+.lk .who{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--muted)}
+.lk .who span{display:inline-flex;align-items:center;gap:5px}
+.empty{font-size:13px;color:var(--muted)}
+
+/* info blocks */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.box{display:flex;flex-direction:column;gap:10px;padding:18px 20px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.box p{font-size:14px;color:var(--muted)}
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+.row:first-child{border-top:0}
+.row .to{color:var(--accent);white-space:nowrap}
+.row small{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-4px}
+
+.tbl-wrap{overflow-x:auto;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+th,td{text-align:left;padding:9px 14px;border-top:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-top:0;background:var(--sunk)}
+td.from{font-weight:600;white-space:nowrap}
+td.to{color:var(--accent);white-space:nowrap}
+td .why{display:block;color:var(--muted);font-size:12.5px}
+td.who{white-space:nowrap}
+td.who span{display:inline-flex;align-items:center;gap:5px;margin-right:10px;font-size:12.5px;color:var(--muted)}
+tr.grp td{background:var(--sunk);font-family:var(--f-display);font-weight:600;font-size:13px}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.sec-h p{font-size:14px;color:var(--muted)}
+
+@media (max-width:1100px){.main{grid-template-columns:minmax(0,1fr)}.panel{position:static;max-height:none}.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.page{padding-inline:16px}}
+@media (prefers-reduced-motion:reduce){.e,.n rect.box{transition:none}}
+</style>
+
+<div class="page">
+  <header class="head">
+    <div class="head-t">
+      <span class="eyebrow" id="eyebrow">Карьерный навигатор IT</span>
+      <h1>Карта переходов</h1>
+      <p>Все связи между страницами: какая кнопка или ссылка куда ведёт и для кого. Нажмите на страницу, чтобы увидеть все её переходы. Ссылки шапки и футера вынесены отдельно ниже, иначе они связали бы каждую страницу с каждой. Админка (/admin) — отдельная зона только для команды, в карту не входит.</p>
+    </div>
+    <div class="roles" role="group" aria-label="Чьими глазами смотреть" id="roles">
+      <button data-r="all" aria-pressed="true">Все</button>
+      <button data-r="guest" aria-pressed="false"><i class="dot c-open"></i>Гость</button>
+      <button data-r="user" aria-pressed="false"><i class="dot c-login"></i>Зарегистрирован</button>
+      <button data-r="sub" aria-pressed="false"><i class="dot c-sub"></i>Подписчик</button>
+      <button data-r="frozen" aria-pressed="false"><i class="dot c-frozen"></i>Подписка заморожена</button>
+    </div>
+  </header>
+
+  <div class="tools">
+  <div class="legend">
+    <span><i class="dot c-open"></i>Страница открыта всем</span>
+    <span><i class="dot c-login"></i>Нужен вход</span>
+    <span><i class="dot c-sub"></i>Нужна подписка</span>
+    <span><i class="dot c-frozen"></i>Заморожена: платное только для чтения</span>
+    <span class="nav-only">Пунктир: служебные страницы</span>
+    <span class="nav-only">Число на странице: сколько переходов из неё</span>
+    <span id="dataLegend" hidden><i class="dot c-data"></i>Точечная линия: передача данных; число на странице — сколько потоков из неё</span>
+  </div>
+  <button class="toggle" id="dataBtn" aria-pressed="false"><i class="dot c-data"></i><span>Показать потоки данных</span></button>
+  </div>
+
+  <div class="main">
+    <div class="graph-wrap"><svg class="graph" id="g" viewBox="0 0 1400 860" role="img" aria-label="Схема переходов между страницами"></svg></div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="sec">
+    <div class="sec-h"><h2>Есть на каждой странице</h2><p>Шапка и футер одинаковые везде, меняется только набор ссылок для гостя и вошедшего.</p></div>
+    <div class="grid3" id="global"></div>
+  </section>
+
+  <section class="sec" id="dataSec" hidden>
+    <div class="sec-h"><h2>Потоки данных</h2><p>Какая страница какие данные передаёт другой. Это не кнопки, а то, что сохраняется на сервере и показывается на другой странице.</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Откуда</th><th>Какие данные</th><th>Куда</th></tr></thead><tbody id="dtbl"></tbody></table></div>
+  </section>
+
+  <section class="sec" id="navSec">
+    <div class="sec-h"><h2>Все переходы списком</h2><p id="tblNote"></p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Откуда</th><th>Кнопка или ссылка</th><th>Куда</th><th>Кому</th></tr></thead><tbody id="tbl"></tbody></table></div>
+  </section>
+</div>
+
+<script>
+const P={ // id: [номер, название, доступ, x, y]
+  home:['1','Главная','open',30,330], notfound:['12','Ошибка 404','open',30,480], error500:['12а','Ошибка 500','open',30,560],
+  verify:['2б','Подтверждение почты','login',225,130], auth:['2','Вход и регистрация','open',225,230], reset:['2а','Восстановление пароля','open',225,430],
+  onboarding:['3','Онбординг','login',420,130], quiz:['4','Профориентация','login',420,330], catalog:['5','Каталог профессий','open',420,530],
+  roadmap:['6','Карточка профессии','open',615,330],
+  assess:['7','Оценка навыков','login',810,230], report:['7а','Отчёт о разрыве','login',810,430],
+  pricing:['8','Подписка','open',1005,230], checkout:['8а','Оплата','login',1005,330], payresult:['8б','Результат оплаты','login',1005,430],
+  plan:['9','Персональный план','sub',1200,130], cabinet:['10','Личный кабинет','login',1200,330], profile:['10а','Профиль и настройки','login',1200,530],
+  policy:['11','Политика конфиденциальности','open',420,770], terms:['11а','Пользовательское соглашение','open',610,770], offer:['11в','Публичная оферта','open',800,770], consent:['11б','Согласие на обработку ПД','open',990,770], about:['13','О проекте','open',1180,770],
+};
+const ACC={open:'Открыта всем',login:'Нужен вход',sub:'Нужна подписка'};
+const RL={guest:'Гость',user:'Зарегистрирован',sub:'Подписчик',frozen:'Заморожена'};
+const RC={guest:'c-open',user:'c-login',sub:'c-sub',frozen:'c-frozen'};
+const STAGES=[['Знакомство','без входа',30],['Вход','аккаунт',225],['Старт','цель',420],['Профессия','что нужно',615],['Оценка','где я',810],['Оплата','250 ₽/мес',1005],['Обучение','каждый день',1200]];
+const A=['guest','user','sub','frozen'], U=['user','sub','frozen'], NS_=['user','frozen']; // NS_ — вошёл, но без активной подписки
+// [откуда, куда, кнопка, кому, пояснение]
+const E=[
+ ['home','auth','«Начать бесплатно», карточки профессий, «Пройдите тест», шаги 2–4',['guest'],'Без входа все действия ведут на регистрацию'],
+ ['home','catalog','«Каталог профессий», «Ещё 7 · каталог», шаг 1',A],
+ ['home','cabinet','«Начать бесплатно»',U,'Если анкета уже заполнена'],
+ ['home','onboarding','«Начать бесплатно»',['user'],'Если анкета ещё не заполнена'],
+ ['home','roadmap','Карточки профессий',U],
+ ['home','quiz','«Пройдите тест»',U],
+ ['home','assess','Шаг 2 «Оцените свои навыки»',U],
+ ['home','report','Шаг 3 «Посмотрите отчёт»',U],
+ ['home','pricing','Шаг 4 «Идите по плану»',NS_],
+ ['home','plan','Шаг 4 «Идите по плану»',['sub']],
+ ['home','policy','Ссылка в форме «Остались вопросы?»',A],
+ ['home','consent','Ссылка в форме «Остались вопросы?»',A],
+ ['auth','reset','«Забыли пароль?»',['guest']],
+ ['auth','verify','Форма регистрации, «Зарегистрироваться»',['guest'],'Новый аккаунт: отправляем письмо со ссылкой подтверждения'],
+ ['auth','cabinet','Форма входа, «Войти»',['guest'],'Возвращает на страницу, откуда пришли; если её нет — в личный кабинет'],
+ ['reset','auth','«← Назад ко входу»',['guest']],
+ ['verify','onboarding','Ссылка из письма или «Продолжить без подтверждения»',['user'],'Онбординг доступен и без подтверждения; оплата — только после него'],
+ ['onboarding','roadmap','«Продолжить»',U,'Если выбрана профессия'],
+ ['onboarding','quiz','«Продолжить»',U,'Если выбрано «Пока не знаю»'],
+ ['onboarding','cabinet','«Пропустить»',U,'Часы в неделю спросим при построении плана'],
+ ['quiz','roadmap','Результат теста, «Открыть карту навыков»',U,'Если профессия «Скоро» — на её карточке форма «Сообщить о запуске»'],
+ ['catalog','roadmap','Карточка профессии',A,'Профессия «Скоро» открывает описание и «Сообщить о запуске»'],
+ ['roadmap','auth','«Узнать мои пробелы», «Отметить тему», «Сообщить о запуске»',['guest']],
+ ['roadmap','assess','«Узнать мои пробелы»',NS_],
+ ['roadmap','plan','«Мой план»',['sub']],
+ ['roadmap','pricing','«Продлите подписку, чтобы продолжить»',['frozen'],'Персональная карта только для чтения'],
+ ['assess','report','«Дальше» на последнем вопросе',U,'Оценка закончена, открывается отчёт'],
+ ['report','assess','«Пройти оценку»',U,'Если оценки ещё нет или прошло 7 дней с прошлой'],
+ ['report','pricing','«Получить персональный план»',NS_,'Краткий отчёт бесплатно, полный — по подписке'],
+ ['report','plan','«Открыть персональный план»',['sub']],
+ ['pricing','auth','«Зарегистрироваться», «Купить за 250 ₽»',['guest']],
+ ['pricing','checkout','«Купить за 250 ₽», «Продлить»',NS_,'Если почта подтверждена'],
+ ['pricing','verify','«Купить за 250 ₽»',['user'],'Если почта не подтверждена'],
+ ['pricing','offer','Ссылка «публичной оферты»',A],
+ ['pricing','terms','Ссылка «пользовательского соглашения»',A],
+ ['checkout','payresult','«Оплатить» (СБП)',NS_,'Подписка включается только по подтверждению от платёжного сервиса'],
+ ['checkout','offer','Ссылка «публичной оферты»',NS_],
+ ['payresult','plan','Успех, «Открыть план»',['sub'],'Если оценка уже пройдена; после продления — с того же места'],
+ ['payresult','assess','Успех, «Пройти оценку»',['sub'],'Если оценки ещё нет'],
+ ['payresult','checkout','Ошибка, «Попробовать ещё раз»',NS_],
+ ['plan','roadmap','«Открыть карту профессии», «Открыть тему на карте»',['sub']],
+ ['plan','assess','«Пройти оценку заново / Обновить план»',['sub']],
+ ['plan','report','«Открыть полный отчёт →»',['sub']],
+ ['plan','profile','Ссылка «в профиле»',['sub']],
+ ['plan','pricing','Плашка «Продлите подписку»',['frozen'],'План только для чтения, прогресс сохранён'],
+ ['cabinet','plan','«Мои профессии» → выбранный план',['sub','frozen'],'Планов без ограничений, переключатель профессий; при заморозке — только чтение'],
+ ['cabinet','pricing','«Персональный план»',['user'],'Без подписки ведёт на оплату'],
+ ['cabinet','pricing','Плашка «Продлить подписку»',['frozen']],
+ ['cabinet','roadmap','Карточка «Текущий шаг», «Продолжить»',['sub']],
+ ['cabinet','roadmap','«Мои профессии» → базовая карта',['user'],'Без подписки — базовые roadmap с отметками'],
+ ['cabinet','assess','«Пройти оценку»',['user'],'Если оценки ещё нет'],
+ ['cabinet','onboarding','«Пройти онбординг»',['user'],'Если анкета не заполнена'],
+ ['cabinet','profile','«Профиль и настройки»',U],
+ ['profile','cabinet','«← Личный кабинет»',U],
+ ['profile','home','«Выйти из аккаунта»',U],
+ ['profile','pricing','«Оформить подписку» / «Продлить»',NS_],
+ ['profile','verify','«Подтвердить почту»',['user'],'Если почта не подтверждена'],
+ ['notfound','home','«На главную»',A],
+ ['error500','home','«На главную», «Обновить страницу»',A],
+ ['policy','terms','Ссылки в тексте и в меню раздела',A,null,1],['policy','offer','Меню раздела',A,null,1],['policy','consent','Ссылки в тексте и в меню раздела',A,null,1],['policy','about','Меню раздела',A,null,1],
+ ['terms','policy','Меню раздела',A,null,1],['terms','offer','Меню раздела',A,null,1],['terms','consent','Меню раздела',A,null,1],['terms','about','Меню раздела',A,null,1],
+ ['offer','policy','Ссылки в тексте и в меню раздела',A,null,1],['offer','terms','Меню раздела',A,null,1],['offer','consent','Меню раздела',A,null,1],['offer','about','Меню раздела',A,null,1],
+ ['consent','policy','Ссылки в тексте и в меню раздела',A,null,1],['consent','terms','Меню раздела',A,null,1],['consent','offer','Меню раздела',A,null,1],['consent','about','Меню раздела',A,null,1],
+ ['about','policy','Меню раздела',A,null,1],['about','terms','Меню раздела',A,null,1],['about','offer','Меню раздела',A,null,1],['about','consent','Меню раздела',A,null,1],
+];
+// Потоки служебных данных: [откуда, куда, какие данные, пояснение]
+const D=[
+ ['auth','cabinet','Сессия пользователя','После входа открываются все закрытые страницы'],
+ ['reset','auth','Новый пароль','Старые сессии завершаются'],
+ ['verify','checkout','Почта подтверждена','Без этого флага оплата недоступна'],
+ ['onboarding','plan','Часы в неделю, дедлайн, цель','По ним считаются сроки плана'],
+ ['onboarding','cabinet','Статус анкеты и выбранная профессия','Кабинет решает, что показать: онбординг или «Продолжить»'],
+ ['quiz','roadmap','Топ-3 профессии и % совпадения','Баллы теста скрыты, передаётся только результат'],
+ ['quiz','cabinet','Результат профориентации','Сохраняется, тест можно пройти заново'],
+ ['assess','report','Уровни навыков (0 / 0,5 / 1)','Вместе с весами навыков из вакансий дают % соответствия'],
+ ['assess','plan','Уровни навыков','Навыки с уровнем ниже 1 попадают в план'],
+ ['report','plan','Пробелы и веса навыков','Порядок тем в плане — по весу навыка в вакансиях'],
+ ['report','cabinet','% соответствия вакансиям','Показывается в кабинете и в кратком отчёте'],
+ ['roadmap','plan','Отметки «Изучено»','Обновляют прогресс плана'],
+ ['roadmap','cabinet','Прогресс по темам','Общий для всех профессий: тема изучена один раз'],
+ ['plan','roadmap','Персональные статусы тем','«уже знаю», «изучить», «текущий шаг», «не обязательно»'],
+ ['plan','cabinet','Текущий шаг, прогресс, дата готовности','Кнопка «Продолжить» ведёт на текущий шаг'],
+ ['profile','plan','Новые часы в неделю, дедлайн','Пересчёт сроков плана'],
+ ['pricing','checkout','Тариф и промокод','Итоговая сумма считается на сервере'],
+ ['checkout','payresult','Статус платежа','Приходит от платёжного сервиса, а не со страницы'],
+ ['payresult','plan','Статус подписки','Активна — план открыт; заморожена — только чтение'],
+ ['payresult','cabinet','Статус подписки и дата окончания','Плашки «Продлить» и статус в кабинете'],
+ ['payresult','profile','История платежей','Чеки и отмена автопродления'],
+];
+let showData=false;
+const GLOBAL=[
+ ['Шапка: гость',[['Логотип','home'],['Каталог профессий','catalog'],['Подписка','pricing'],['Войти','auth']]],
+ ['Шапка: после входа',[['Логотип','home'],['Каталог профессий','catalog'],['Мой план','plan','Без подписки ведёт на «Подписку»; при заморозке — план только для чтения'],['Подписка','pricing'],['Личный кабинет','cabinet']]],
+ ['Футер: для всех',[['Каталог профессий','catalog'],['Тест на профориентацию','quiz','Гостя сначала отправит на вход'],['Подписка','pricing'],['Политика конфиденциальности','policy'],['Пользовательское соглашение','terms'],['Публичная оферта','offer'],['О проекте','about']]],
+];
+const RULES=[
+ ['Гость открывает закрытую страницу','auth','Онбординг, тест, оценка, отчёт, план, оплата, кабинет, профиль. После входа человек возвращается туда, куда шёл.'],
+ ['Вошедший открывает вход или сброс пароля','cabinet','Повторно входить не нужно.'],
+ ['Без подписки открывает план','pricing','План доступен только подписчикам.'],
+ ['Почта не подтверждена, а человек идёт оплачивать','verify','Оплата только после подтверждения почты.'],
+ ['Подписка заморожена','plan','План и персональная карта открываются только для чтения, сверху плашка «Продлить». Прогресс сохранён.'],
+ ['Адреса нет','notfound','Любая неизвестная ссылка.'],
+ ['Ошибка на сервере','error500','Сбой при загрузке страницы или данных.'],
+];
+const PAGES=Object.keys(P).length;
+document.getElementById('eyebrow').textContent=`Карьерный навигатор IT · ${PAGES} страниц`;
+
+const W=170,H=50, g=document.getElementById('g'), NS='http://www.w3.org/2000/svg';
+let role='all', sel=null;
+const vis=e=>role==='all'||e[3].includes(role);
+const name=id=>P[id][1];
+function anchor(a,b){
+  const [ax,ay]=[P[a][3],P[a][4]],[bx,by]=[P[b][3],P[b][4]];
+  if(Math.abs(ax-bx)<5){ // same column
+    const down=by>ay; const x1=ax+W/2+(down?18:-18);
+    return `M${x1},${down?ay+H:ay} C${x1},${(ay+by+H)/2} ${x1},${(ay+by+H)/2} ${x1},${down?by:by+H}`;
+  }
+  if(bx>ax){ const x1=ax+W,y1=ay+H/2,x2=bx,y2=by+H/2,m=(x1+x2)/2; return `M${x1},${y1} C${m},${y1} ${m},${y2} ${x2},${y2}`; }
+  // back edge: leave from top/bottom, arc over
+  const up=by<=ay; const x1=ax+W*0.35,y1=up?ay:ay+H,x2=bx+W*0.65,y2=up?by:by+H; const k=up?-1:1, bend=Math.max(60,Math.abs(ax-bx)*0.18);
+  return `M${x1},${y1} C${x1},${y1+k*bend} ${x2},${y2+k*bend} ${x2},${y2}`;
+}
+function draw(){
+  let s=`<defs>${['ah','ah-on','ah-in'].map(c=>`<marker id="${c}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="${c}" d="M0,0L10,5L0,10z"/></marker>`).join('')}<marker id="ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ad" d="M0,0L10,5L0,10z"/></marker></defs>`;
+  s+=STAGES.map(([t,sub,x])=>`<rect class="lane" x="${x-10}" y="20" width="${W+20}" height="${610}" rx="14"/><text class="stage-l" x="${x}" y="48">${t}</text><text class="stage-s" x="${x}" y="66">${sub}</text>`).join('');
+  s+=`<rect class="lane" x="410" y="720" width="${1360-410}" height="110" rx="14"/><text class="stage-l" x="30" y="790">Служебные</text><text class="stage-s" x="30" y="808">из футера и форм</text>`;
+  const out={}; if(showData) D.forEach(d=>{ out[d[0]]=(out[d[0]]||0)+1; }); else E.forEach(e=>{ if(vis(e)) out[e[0]]=(out[e[0]]||0)+1; });
+  // одинаковые пары «откуда → куда» рисуем одной линией
+  const drawn=new Set();
+  if(!showData) E.forEach((e,i)=>{ if(!vis(e)) return; const key=e[0]+'>'+e[1]; if(drawn.has(key)) return; drawn.add(key);
+    const on=sel&&e[0]===sel, inn=sel&&e[1]===sel;
+    s+=`<path class="e${e[5]?' legal':''}${on?' on':''}${inn?' in':''}" d="${anchor(e[0],e[1])}" marker-end="url(#${on?'ah-on':inn?'ah-in':'ah'})"><title>${name(e[0])} → ${name(e[1])}: ${e[2]}</title></path>`; });
+  if(showData) D.forEach(d=>{ const on=sel&&d[0]===sel, inn=sel&&d[1]===sel;
+    s+=`<path class="d${on?' on':''}${inn?' in':''}" transform="translate(0,7)" d="${anchor(d[0],d[1])}" marker-end="url(#ad)"><title>Данные: ${name(d[0])} → ${name(d[1])}: ${d[2]}</title></path>`; });
+  const rel=new Set(); if(sel&&!showData) E.forEach(e=>{ if(!vis(e)) return; if(e[0]===sel) rel.add(e[1]); if(e[1]===sel) rel.add(e[0]); });
+  if(sel&&showData) D.forEach(d=>{ if(d[0]===sel) rel.add(d[1]); if(d[1]===sel) rel.add(d[0]); });
+  for(const [id,[n,t,a,x,y]] of Object.entries(P)){
+    const lines=t.length>20?split(t):[t];
+    s+=`<g class="n c-${a}${sel===id?' sel':''}${rel.has(id)?' rel':''}" data-id="${id}" tabindex="0" role="button" aria-label="${n}. ${t}">
+      <rect class="box" x="${x}" y="${y}" width="${W}" height="${H}" rx="11"/>
+      <circle cx="${x+14}" cy="${y+15}" r="4"/>
+      <text class="num" x="${x+24}" y="${y+19}">${n}</text>
+      <text class="cnt" x="${x+W-10}" y="${y+19}" text-anchor="end">${out[id]||0} →</text>
+      ${lines.map((l,j)=>`<text class="t" x="${x+12}" y="${y+(lines.length>1?33+j*13:37)}">${l}</text>`).join('')}</g>`;
+  }
+  g.innerHTML=s; g.classList.toggle('focus',!!sel);
+}
+function split(t){const w=t.split(' ');let a='',b='';for(const x of w){ if((a+' '+x).trim().length<=20&&!b) a=(a+' '+x).trim(); else b=(b+' '+x).trim(); } return [a,b];}
+const who=r=>r.map(x=>`<span><i class="dot ${RC[x]}"></i>${RL[x]}</span>`).join('');
+function panel(){
+  const p=document.getElementById('panel');
+  if(!sel&&showData){ p.innerHTML=`<div class="panel-h"><h2>Потоки данных</h2><p class="muted">Переходы скрыты, на схеме только передача данных между страницами. Нажмите на страницу, чтобы увидеть, что она передаёт и получает.</p></div>
+    <div class="list"><h3>Сейчас на схеме</h3><p class="empty">${D.length} потоков данных, ${PAGES} страниц.</p></div>`; return; }
+  if(!sel){ const n=E.filter(vis).length;
+    p.innerHTML=`<div class="panel-h"><h2>Выберите страницу</h2><p class="muted">Нажмите на любую страницу на схеме. Здесь появятся все кнопки, которые ведут из неё и в неё.</p></div>
+    <div class="list"><h3>Сейчас на схеме</h3><p class="empty">${n} переходов${role==='all'?'':' для роли «'+RL[role]+'»'}, ${PAGES} страниц.</p></div>
+    <div class="list"><h3>Автоматические переадресации</h3>${RULES.map(([w,to,why])=>`<div class="lk rule"><b>${w}</b><span class="to">→ ${name(to)}</span><span class="why">${why}</span></div>`).join('')}</div>`; return; }
+  const [n,t,a]=P[sel], o=E.filter(e=>vis(e)&&e[0]===sel), i=E.filter(e=>vis(e)&&e[1]===sel);
+  if(showData){ p.innerHTML=`<div class="panel-h"><h2><span class="num-b">${n}</span>${t}</h2><span class="acc"><i class="dot c-${a}"></i>${ACC[a]}</span></div>
+   ${dataLists()}
+   <button class="lk" data-clear="1" style="justify-content:center"><b>Показать все потоки</b></button>`; return; }
+  const item=(e,dir)=>`<button class="lk" data-go="${dir==='out'?e[1]:e[0]}"><b>${e[2]}</b><span class="to">${dir==='out'?'→ '+name(e[1]):'← '+name(e[0])}</span>${e[4]?`<span class="why">${e[4]}</span>`:''}<span class="who">${who(e[3])}</span></button>`;
+  p.innerHTML=`<div class="panel-h"><h2><span class="num-b">${n}</span>${t}</h2><span class="acc"><i class="dot c-${a}"></i>${ACC[a]}</span></div>
+   <div class="list"><h3>Куда ведёт · ${o.length}</h3>${o.map(e=>item(e,'out')).join('')||'<p class="empty">Переходов нет, только шапка и футер.</p>'}</div>
+   <div class="list"><h3>Откуда приходят · ${i.length}</h3>${i.map(e=>item(e,'in')).join('')||'<p class="empty">Только из шапки, футера или по прямой ссылке.</p>'}</div>
+   <button class="lk" data-clear="1" style="justify-content:center"><b>Показать все переходы</b></button>`;
+}
+function dataLists(){
+  const o=D.filter(d=>d[0]===sel), i=D.filter(d=>d[1]===sel);
+  const it=(d,dir)=>`<button class="lk data" data-go="${dir==='out'?d[1]:d[0]}"><b>${d[2]}</b><span class="dto">${dir==='out'?'→ '+name(d[1]):'← '+name(d[0])}</span>${d[3]?`<span class="why">${d[3]}</span>`:''}</button>`;
+  return `<div class="list"><h3>Передаёт данные · ${o.length}</h3>${o.map(d=>it(d,'out')).join('')||'<p class="empty">Ничего не передаёт.</p>'}</div>
+   <div class="list"><h3>Получает данные · ${i.length}</h3>${i.map(d=>it(d,'in')).join('')||'<p class="empty">Ничего не получает.</p>'}</div>`;
+}
+function dtable(){
+  const rows=[]; let last='';
+  for(const d of D){ if(d[0]!==last){ rows.push(`<tr class="grp"><td colspan="3">${P[d[0]][0]} · ${name(d[0])}</td></tr>`); last=d[0]; }
+    rows.push(`<tr><td class="from">${name(d[0])}</td><td>${d[2]}${d[3]?`<span class="why">${d[3]}</span>`:''}</td><td class="dto">→ ${name(d[1])}</td></tr>`); }
+  document.getElementById('dtbl').innerHTML=rows.join('');
+}
+function table(){
+  const rows=[]; let last='';
+  for(const e of E){ if(!vis(e)) continue;
+    if(e[0]!==last){ rows.push(`<tr class="grp"><td colspan="4">${P[e[0]][0]} · ${name(e[0])}</td></tr>`); last=e[0]; }
+    rows.push(`<tr><td class="from">${name(e[0])}</td><td>${e[2]}${e[4]?`<span class="why">${e[4]}</span>`:''}</td><td class="to">→ ${name(e[1])}</td><td class="who">${who(e[3])}</td></tr>`); }
+  document.getElementById('tbl').innerHTML=rows.join('');
+  document.getElementById('tblNote').textContent=`${E.filter(vis).length} переходов${role==='all'?' для всех ролей':' для роли «'+RL[role]+'»'}, сгруппированы по странице, откуда идёт переход.`;
+}
+document.getElementById('global').innerHTML=GLOBAL.map(([t,l])=>`<div class="box"><h3>${t}</h3><div class="rows">${l.map(([a,to,why])=>`<div class="row"><span>${a}</span><span class="to">→ ${name(to)}</span>${why?`<small>${why}</small>`:''}</div>`).join('')}</div></div>`).join('');
+function all(){ draw(); panel(); table(); }
+g.addEventListener('click',e=>{ const n=e.target.closest('.n'); sel=n?(sel===n.dataset.id?null:n.dataset.id):null; draw(); panel(); });
+g.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.closest('.n')){ e.preventDefault(); const id=e.target.closest('.n').dataset.id; sel=sel===id?null:id; draw(); panel(); g.querySelector(`.n[data-id="${id}"]`)?.focus(); }});
+document.getElementById('panel').addEventListener('click',e=>{ const b=e.target.closest('.lk'); if(!b) return; if(b.dataset.clear) sel=null; else if(b.dataset.go) sel=b.dataset.go; else return; draw(); panel(); });
+document.getElementById('roles').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; role=b.dataset.r; document.querySelectorAll('#roles button').forEach(x=>x.setAttribute('aria-pressed',x===b)); all(); });
+document.getElementById('dataBtn').addEventListener('click',e=>{ showData=!showData; const b=e.currentTarget; b.setAttribute('aria-pressed',showData); b.querySelector('span').textContent=showData?'Скрыть потоки данных':'Показать потоки данных'; document.getElementById('dataSec').hidden=!showData; document.getElementById('dataLegend').hidden=!showData; document.getElementById('navSec').hidden=showData; document.querySelectorAll('.nav-only').forEach(x=>x.hidden=showData); document.getElementById('roles').style.opacity=showData?.4:''; document.getElementById('roles').style.pointerEvents=showData?'none':''; draw(); panel(); });
+dtable();
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&sel){ sel=null; draw(); panel(); }});
+all();
+</script>

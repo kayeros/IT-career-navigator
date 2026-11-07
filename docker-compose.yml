@@ -1,0 +1,68 @@
+# Локальное окружение: PostgreSQL 16, api и worker.
+# Запуск: docker compose up --build   (.env необязателен: без него берутся значения по умолчанию)
+name: careernav
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-careernav}
+      POSTGRES_USER: ${POSTGRES_USER:-careernav}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-careernav}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    command: ["/app/api"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-careernav}:${POSTGRES_PASSWORD:-careernav}@db:5432/${POSTGRES_DB:-careernav}?sslmode=disable
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  worker:
+    build: ./backend
+    command: ["/app/worker"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-careernav}:${POSTGRES_PASSWORD:-careernav}@db:5432/${POSTGRES_DB:-careernav}?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Сервис аналитики (Python). Пока запускается вручную, расписание — в срезе 1:
+  #   docker compose run --rm collector load-superjob --profession qa-manual
+  collector:
+    build: ./collector
+    profiles: ["tools"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-careernav}:${POSTGRES_PASSWORD:-careernav}@db:5432/${POSTGRES_DB:-careernav}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

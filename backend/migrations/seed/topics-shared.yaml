@@ -1,0 +1,67 @@
+# ЧЕРНОВИК. Общие темы: хранятся один раз, ставятся в блоки разных профессий.
+topics:
+  - slug: git-basics
+    title: Git и работа с репозиторием
+    description: Коммиты, ветки, слияние, удалённые репозитории, pull request.
+    hours: 12
+    skills: [Git]
+    resources:
+      - {title: "Pro Git (книга на русском)", url: "https://git-scm.com/book/ru/v2", type: docs, language: ru}
+  - slug: sql-basics
+    title: Основы SQL
+    description: SELECT, фильтры, JOIN, агрегаты, изменение данных.
+    hours: 25
+    skills: [SQL]
+    resources:
+      - {title: "Интерактивный тренажёр по SQL (Stepik)", url: "https://stepik.org/course/63054", type: course, language: ru}
+      - {title: "Документация PostgreSQL: учебник", url: "https://postgrespro.ru/docs/postgresql/16/tutorial", type: docs, language: ru}
+  - slug: http-basics
+    title: Основы HTTP
+    description: Запросы и ответы, методы, коды состояния, заголовки, cookie.
+    hours: 8
+    skills: [HTTP]
+    resources:
+      - {title: "MDN: обзор протокола HTTP", url: "https://developer.mozilla.org/ru/docs/Web/HTTP/Overview", type: docs, language: ru}
+  - slug: linux-basics
+    title: Основы Linux и командной строки
+    description: Файлы и права, процессы, просмотр логов, базовые команды bash.
+    hours: 15
+    skills: [Linux]
+    resources:
+      - {title: "Ubuntu: The Linux command line for beginners", url: "https://ubuntu.com/tutorials/command-line-for-beginners", type: docs, language: en}
+  - slug: oop-basics
+    title: Основы ООП
+    description: Классы и объекты, инкапсуляция, наследование, полиморфизм.
+    hours: 15
+    skills: [ООП]
+    resources:
+      - {title: "Python: классы (официальный учебник)", url: "https://docs.python.org/3/tutorial/classes.html", type: docs, language: en}
+      - {title: "Java: Object-Oriented Programming Concepts", url: "https://dev.java/learn/oop/", type: docs, language: en}
+  - slug: rest-api-design
+    title: REST API
+    description: Ресурсы, методы, коды ответов, форматы данных, версионирование.
+    hours: 8
+    skills: [REST API]
+    resources:
+      - {title: "MDN: методы HTTP-запроса", url: "https://developer.mozilla.org/ru/docs/Web/HTTP/Methods", type: docs, language: ru}
+  - slug: postgresql-basics
+    title: PostgreSQL на практике
+    description: Типы данных, индексы, транзакции, план запроса.
+    hours: 20
+    skills: [PostgreSQL]
+    resources:
+      - {title: "Документация PostgreSQL на русском", url: "https://postgrespro.ru/docs/postgresql/16/", type: docs, language: ru}
+  - slug: docker-basics
+    title: Docker и Docker Compose
+    description: Образы, контейнеры, Dockerfile, запуск нескольких сервисов.
+    hours: 12
+    skills: [Docker]
+    resources:
+      - {title: "Docker: Get started", url: "https://docs.docker.com/get-started/", type: docs, language: en}
+  - slug: ci-cd-basics
+    title: Основы CI/CD
+    description: Автоматический запуск тестов и сборки на каждый коммит.
+    hours: 6
+    skills: [CI/CD]
+    resources:
+      - {title: "GitHub Actions: документация", url: "https://docs.github.com/ru/actions", type: docs, language: ru}

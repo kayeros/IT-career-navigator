@@ -1,0 +1,183 @@
+# ЧЕРНОВИК. Правит Рустам (темы, навыки) и Алик (материалы).
+slug: qa-manual
+title: Ручное тестирование (QA)
+description: Проверяет, что продукт работает как задумано, находит и описывает ошибки до того, как их увидят пользователи.
+for_whom: Тем, кто внимателен к деталям и хочет войти в IT без глубокого программирования.
+sort_order: 1
+
+key_skills:
+  - Теория тестирования
+  - Тест-дизайн
+  - Тест-кейсы
+  - Чек-листы
+  - Баг-репорты
+  - Agile
+  - Scrum
+  - Jira
+  - TestRail
+  - Chrome DevTools
+  - Charles
+  - HTTP
+  - HTML
+  - CSS
+  - Клиент-серверная архитектура
+  - REST API
+  - Postman
+  - JSON
+  - XML
+  - Мобильное тестирование
+  - ADB
+  - SQL
+  - Linux
+  - Git
+  - Автотесты
+
+topics:
+  - slug: qa-testing-theory
+    title: Теория тестирования
+    description: Цели, принципы, виды и уровни тестирования, жизненный цикл бага.
+    hours: 20
+    skills: [Теория тестирования]
+    resources:
+      - {title: "ISTQB Glossary", url: "https://glossary.istqb.org/", type: docs, language: en}
+      - {title: "ISTQB Certified Tester Foundation Level: программа", url: "https://www.istqb.org/certifications/certified-tester-foundation-level", type: docs, language: en}
+  - slug: qa-test-design
+    title: Техники тест-дизайна
+    description: Классы эквивалентности, граничные значения, таблицы решений, переходы состояний.
+    hours: 12
+    skills: [Тест-дизайн]
+    resources:
+      - {title: "ISTQB Glossary", url: "https://glossary.istqb.org/", type: docs, language: en}
+  - slug: qa-sdlc-agile
+    title: Жизненный цикл ПО, Agile и Scrum
+    description: Как устроена разработка, роли в команде, спринты и церемонии.
+    hours: 6
+    skills: [Agile, Scrum]
+    resources:
+      - {title: "Руководство по Scrum (на русском)", url: "https://scrumguides.org/docs/scrumguide/v2020/2020-Scrum-Guide-Russian.pdf", type: docs, language: ru}
+  - slug: qa-test-docs
+    title: Чек-листы и тест-кейсы
+    description: Как писать проверки, которые поймёт любой член команды.
+    hours: 10
+    skills: [Тест-кейсы, Чек-листы]
+    resources:
+      - {title: "TestRail: документация", url: "https://support.testrail.com/hc/en-us", type: docs, language: en}
+  - slug: qa-bug-reports
+    title: Баг-репорты
+    description: Структура отчёта об ошибке, серьёзность и приоритет, шаги воспроизведения.
+    hours: 6
+    skills: [Баг-репорты]
+    resources:
+      - {title: "Jira: руководство по работе с задачами", url: "https://www.atlassian.com/software/jira/guides", type: docs, language: en}
+  - slug: qa-jira
+    title: Jira и трекеры задач
+    description: Задачи, статусы, доски, фильтры, связь багов с задачами.
+    hours: 4
+    skills: [Jira]
+    resources:
+      - {title: "Jira: руководства", url: "https://www.atlassian.com/software/jira/guides", type: docs, language: en}
+  - slug: qa-test-management
+    title: Системы управления тестированием
+    description: Хранение тест-кейсов, тестовые прогоны, отчётность.
+    hours: 4
+    skills: [TestRail]
+    resources:
+      - {title: "TestRail: документация", url: "https://support.testrail.com/hc/en-us", type: docs, language: en}
+  - slug: qa-devtools
+    title: Инструменты разработчика в браузере
+    description: Вкладки Elements, Console и Network, просмотр запросов и ошибок.
+    hours: 6
+    skills: [Chrome DevTools]
+    resources:
+      - {title: "Chrome DevTools: документация", url: "https://developer.chrome.com/docs/devtools", type: docs, language: en}
+  - slug: qa-sniffers
+    title: Снифферы трафика
+    description: Перехват и подмена запросов, тестирование мобильного трафика.
+    hours: 6
+    skills: [Charles]
+    resources:
+      - {title: "Charles Proxy: документация", url: "https://www.charlesproxy.com/documentation/", type: docs, language: en}
+  - slug: qa-web-basics
+    title: HTML и CSS для тестировщика
+    description: Структура страницы, селекторы, поиск причин ошибок вёрстки.
+    hours: 10
+    skills: [HTML, CSS]
+    resources:
+      - {title: "MDN: основы HTML", url: "https://developer.mozilla.org/ru/docs/Learn/HTML", type: docs, language: ru}
+  - slug: qa-client-server
+    title: Клиент-серверная архитектура
+    description: Клиент, сервер, база данных, как проходит запрос и где искать ошибку.
+    hours: 5
+    skills: [Клиент-серверная архитектура]
+    resources:
+      - {title: "MDN: как работает веб", url: "https://developer.mozilla.org/ru/docs/Learn/Getting_started_with_the_web/How_the_Web_works", type: docs, language: ru}
+  - slug: qa-data-formats
+    title: Форматы данных JSON и XML
+    description: Как читать и проверять ответы сервера.
+    hours: 3
+    skills: [JSON, XML]
+    resources:
+      - {title: "MDN: работа с JSON", url: "https://developer.mozilla.org/ru/docs/Learn/JavaScript/Objects/JSON", type: docs, language: ru}
+  - slug: qa-postman
+    title: Тестирование API в Postman
+    description: Запросы, коллекции, переменные окружения, простые проверки ответа.
+    hours: 10
+    skills: [Postman]
+    resources:
+      - {title: "Postman Learning Center", url: "https://learning.postman.com/docs/introduction/overview/", type: docs, language: en}
+  - slug: qa-mobile-testing
+    title: Тестирование мобильных приложений
+    description: Особенности iOS и Android, сеть, прерывания, установка и обновление.
+    hours: 10
+    skills: [Мобильное тестирование]
+    resources:
+      - {title: "Android: основы тестирования приложений", url: "https://developer.android.com/training/testing/fundamentals", type: docs, language: en}
+  - slug: qa-adb
+    title: Android Studio и ADB
+    description: Эмулятор, установка сборки, сбор логов с устройства.
+    hours: 5
+    skills: [ADB]
+    resources:
+      - {title: "Android Debug Bridge (adb)", url: "https://developer.android.com/tools/adb", type: docs, language: en}
+  - slug: qa-automation-intro
+    title: Введение в автотесты
+    description: Зачем нужны автотесты, что автоматизировать, первый тест на Python.
+    hours: 15
+    skills: [Автотесты]
+    resources:
+      - {title: "Selenium: документация", url: "https://www.selenium.dev/documentation/", type: docs, language: en}
+
+blocks:
+  - title: Основы тестирования
+    topics:
+      - qa-testing-theory
+      - qa-sdlc-agile
+      - qa-test-design
+      - qa-test-docs
+      - qa-bug-reports
+  - title: Инструменты тестировщика
+    topics:
+      - qa-jira
+      - qa-test-management
+      - qa-devtools
+      - git-basics
+  - title: Веб и API
+    topics:
+      - qa-client-server
+      - http-basics
+      - qa-web-basics
+      - qa-data-formats
+      - rest-api-design
+      - qa-postman
+      - qa-sniffers
+  - title: Базы данных и окружение
+    topics:
+      - sql-basics
+      - linux-basics
+  - title: Мобильное тестирование
+    topics:
+      - qa-mobile-testing
+      - qa-adb
+  - title: Первые шаги в автоматизации
+    topics:
+      - {slug: qa-automation-intro, optional: true}

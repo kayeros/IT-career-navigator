@@ -1,0 +1,430 @@
+openapi: 3.1.0
+info:
+  title: Карьерный навигатор IT — API
+  version: 0.1.0
+  description: |
+    Контракт между backend и фронтендом. Источник истины: сначала меняем спецификацию, потом код.
+
+    Срез 0 (демо трекеру): аккаунт, каталог, карточка профессии, «Изучено», % соответствия.
+
+    **Авторизация** — cookie-сессия `session` (httpOnly, SameSite=Lax, Secure вне локальной среды),
+    срок 30 дней. Фронтенд отправляет запросы с `credentials: 'include'` и токен не читает.
+
+    **Ошибки** — всегда в формате `{"error": {"code": "...", "message": "..."}}`.
+    Логика ветвится по `code`, `message` можно показать пользователю.
+servers:
+  - url: /api/v1
+
+tags:
+  - name: auth
+    description: Регистрация, вход, выход
+  - name: catalog
+    description: Каталог и карточка профессии
+  - name: progress
+    description: Отметка «Изучено»
+  - name: match
+    description: Процент соответствия вакансиям
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Регистрация
+      description: |
+        Создаёт пользователя, записывает согласие на обработку ПД и сразу выполняет вход (ставит cookie).
+        Ссылка подтверждения почты пока пишется в журнал сервера; вход без подтверждения разрешён.
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201':
+          description: Пользователь создан, сессия открыта
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/SessionCookie'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '409':
+          description: 'Почта уже зарегистрирована (`email_taken`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Вход
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LoginRequest'}
+      responses:
+        '200':
+          description: Вход выполнен
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/SessionCookie'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401':
+          description: 'Неверная почта или пароль (`invalid_credentials`)'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '429':
+          description: 'Слишком много попыток входа (`too_many_attempts`), заголовок Retry-After — через сколько секунд повторить'
+          headers:
+            Retry-After:
+              schema: {type: integer}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Выход
+      description: Закрывает текущую сессию и стирает cookie. Без сессии тоже отвечает 204.
+      operationId: logout
+      security: []
+      responses:
+        '204':
+          description: Сессия закрыта
+
+  /me:
+    get:
+      tags: [auth]
+      summary: Текущий пользователь
+      operationId: getMe
+      security: [{session: []}]
+      responses:
+        '200':
+          description: Пользователь вошёл
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /professions:
+    get:
+      tags: [catalog]
+      summary: Каталог профессий
+      description: Профессии со статусами `available` и `soon` (скрытые не возвращаются), по порядку показа.
+      operationId: listProfessions
+      security: []
+      responses:
+        '200':
+          description: Список профессий
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/ProfessionSummary'}
+
+  /professions/{slug}:
+    get:
+      tags: [catalog]
+      summary: Карточка профессии с roadmap
+      description: |
+        Блоки → темы → материалы (только одобренные). Для вошедшего пользователя у тем заполнено `studied`,
+        а в `progress` — сколько тем изучено. Для гостя `studied` = false, `progress` = null.
+      operationId: getProfession
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Карточка профессии
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProfessionDetail'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /topics/{id}/progress:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+    put:
+      tags: [progress]
+      summary: Отметить тему изученной
+      description: Повторная отметка ничего не меняет. «Изучено» общее для всех профессий, где есть эта тема.
+      operationId: markTopicStudied
+      security: [{session: []}]
+      responses:
+        '204':
+          description: Тема отмечена
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [progress]
+      summary: Снять отметку «Изучено»
+      operationId: unmarkTopicStudied
+      security: [{session: []}]
+      responses:
+        '204':
+          description: Отметка снята (или её не было)
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /professions/{slug}/match:
+    get:
+      tags: [match]
+      summary: Процент соответствия вакансиям
+      description: |
+        Считается по последнему опубликованному снимку весов навыков профессии:
+        % = Σ(вес × уровень) / Σ весов ключевых навыков × 100.
+
+        Уровень навыка на срезе 0 — из «Изучено»: изучены все темы, закрывающие навык → 1;
+        часть → 0,5; ни одной → 0.
+
+        Если снимка весов ещё нет — `snapshot` = null, `percent` = null, списки пустые.
+        `preliminary` = true, если в снимке меньше 200 вакансий (исключение для MVP).
+      operationId: getMatch
+      security: [{session: []}]
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Результат
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Match'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: session
+
+  headers:
+    SessionCookie:
+      description: '`session=<токен>; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000` (+ `Secure` вне локальной среды)'
+      schema: {type: string}
+
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema: {type: string, example: qa-manual}
+
+  responses:
+    ValidationError:
+      description: 'Ошибка в данных (`validation_error`); в `fields` — что не так с каждым полем'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error:
+              code: validation_error
+              message: Проверьте поля формы
+              fields: {password: Пароль должен быть не короче 8 символов}
+    Unauthorized:
+      description: 'Пользователь не вошёл (`unauthorized`)'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    NotFound:
+      description: 'Не найдено (`not_found`)'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Машинный код ошибки
+              examples: [validation_error, email_taken, invalid_credentials, too_many_attempts, unauthorized, not_found, internal]
+            message:
+              type: string
+              description: Текст для пользователя
+            fields:
+              type: object
+              description: Ошибки по полям формы (только для validation_error)
+              additionalProperties: {type: string}
+
+    RegisterRequest:
+      type: object
+      required: [email, password, name, consent_pd]
+      properties:
+        email: {type: string, format: email, maxLength: 254}
+        password: {type: string, minLength: 8, maxLength: 128}
+        name: {type: string, minLength: 1, maxLength: 100}
+        consent_pd:
+          type: boolean
+          description: Согласие на обработку персональных данных. Без true регистрация невозможна.
+        consent_marketing:
+          type: boolean
+          default: false
+          description: Согласие на рассылки (необязательное)
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: {type: string, format: email}
+        password: {type: string}
+
+    User:
+      type: object
+      required: [id, email, name, role, email_verified]
+      properties:
+        id: {type: integer, format: int64}
+        email: {type: string, format: email}
+        name: {type: string}
+        role: {type: string, enum: [user, admin]}
+        email_verified: {type: boolean}
+
+    ProfessionSummary:
+      type: object
+      required: [slug, title, status, blocks_count, topics_count]
+      properties:
+        slug: {type: string}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        for_whom: {type: [string, 'null']}
+        status:
+          type: string
+          enum: [available, soon]
+          description: available — можно открыть roadmap; soon — «скоро»
+        blocks_count: {type: integer}
+        topics_count: {type: integer}
+
+    ProfessionDetail:
+      type: object
+      required: [slug, title, status, blocks, progress]
+      properties:
+        slug: {type: string}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        for_whom: {type: [string, 'null']}
+        status: {type: string, enum: [available, soon]}
+        progress:
+          description: Прогресс вошедшего пользователя; null для гостя
+          oneOf:
+            - $ref: '#/components/schemas/Progress'
+            - type: 'null'
+        blocks:
+          type: array
+          items: {$ref: '#/components/schemas/Block'}
+
+    Progress:
+      type: object
+      required: [studied, total]
+      properties:
+        studied: {type: integer, description: Сколько тем профессии изучено}
+        total: {type: integer, description: Сколько тем в профессии}
+
+    Block:
+      type: object
+      required: [id, title, topics]
+      properties:
+        id: {type: integer, format: int64}
+        title: {type: string}
+        topics:
+          type: array
+          items: {$ref: '#/components/schemas/Topic'}
+
+    Topic:
+      type: object
+      required: [id, slug, title, hours, optional, studied, resources]
+      properties:
+        id: {type: integer, format: int64}
+        slug: {type: string}
+        title: {type: string}
+        description: {type: [string, 'null']}
+        hours: {type: number, description: Часы на изучение с нуля}
+        optional: {type: boolean, description: Необязательна для junior}
+        studied: {type: boolean}
+        resources:
+          type: array
+          items: {$ref: '#/components/schemas/Resource'}
+
+    Resource:
+      type: object
+      required: [id, title, url, type, language, is_free]
+      properties:
+        id: {type: integer, format: int64}
+        title: {type: string}
+        url: {type: string, format: uri}
+        type: {type: string, enum: [article, video, course, docs, practice]}
+        language: {type: string, examples: [ru, en]}
+        is_free: {type: boolean}
+
+    Match:
+      type: object
+      required: [percent, snapshot, key_skills_total, key_skills_covered, missing]
+      properties:
+        percent:
+          type: [number, 'null']
+          description: 0–100, одна цифра после запятой; null, если снимка весов нет
+        snapshot:
+          oneOf:
+            - $ref: '#/components/schemas/Snapshot'
+            - type: 'null'
+        key_skills_total: {type: integer, description: Ключевых навыков профессии с весом в снимке}
+        key_skills_covered: {type: integer, description: Из них с уровнем 1}
+        missing:
+          type: array
+          description: Топ-5 недостающих навыков (уровень < 1) по убыванию веса
+          maxItems: 5
+          items: {$ref: '#/components/schemas/MissingSkill'}
+
+    Snapshot:
+      type: object
+      required: [period, vacancy_count, calculated_at, preliminary]
+      properties:
+        period: {type: string, format: date}
+        vacancy_count: {type: integer}
+        calculated_at: {type: string, format: date-time}
+        preliminary:
+          type: boolean
+          description: true, если вакансий меньше 200 — показывать пометку «предварительные данные»
+
+    MissingSkill:
+      type: object
+      required: [skill_id, name, weight, level, topics]
+      properties:
+        skill_id: {type: integer, format: int64}
+        name: {type: string}
+        weight:
+          type: number
+          description: 'Доля вакансий с навыком, 0–1 (0.64 → «нужен в 64% вакансий»)'
+        level: {type: number, enum: [0, 0.5]}
+        topics:
+          type: array
+          description: Темы профессии, которые закрывают навык
+          items:
+            type: object
+            required: [id, slug, title, studied]
+            properties:
+              id: {type: integer, format: int64}
+              slug: {type: string}
+              title: {type: string}
+              studied: {type: boolean}

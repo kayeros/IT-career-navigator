@@ -1,0 +1,665 @@
+// Карьерный навигатор IT — схема базы данных (черновик от 10.10.2026)
+// PostgreSQL. Вставить в https://dbdiagram.io → получится ER-диаграмма.
+// Правила: ключи bigint identity; время timestamptz; статусы — text с CHECK (значения в note).
+// Темы — общая библиотека (одна тема ставится в блоки разных профессий).
+// Уровень навыка пользователя общий для всех профессий.
+
+Project karernyi_navigator {
+  database_type: 'PostgreSQL'
+  Note: 'Черновик схемы БД. Источник требований — «структура_итоговой_платформы.docx».'
+}
+
+// ============ 1. АККАУНТ ============
+
+Table users {
+  id bigint [pk, increment]
+  email citext [not null, unique]
+  email_verified_at timestamptz
+  password_hash text [not null]
+  name text [not null]
+  phone text
+  role text [not null, default: 'user', note: 'user | admin']
+  status text [not null, default: 'active', note: 'active | blocked']
+  created_at timestamptz [not null, default: `now()`]
+  last_login_at timestamptz
+}
+
+Table user_profiles {
+  user_id bigint [pk, ref: - users.id]
+  learner_status text [note: 'student | graduate | switcher | other']
+  course smallint [note: 'курс, если студент']
+  hours_per_week smallint [note: '2–40']
+  deadline date
+  months_learning smallint [note: 'вопрос для гипотез']
+  learned_unneeded boolean [note: '«Было ли, что учили лишнее?»']
+  onboarding_completed_at timestamptz
+  notify_weekly boolean [not null, default: true]
+  notify_inactive boolean [not null, default: true]
+  notify_market boolean [not null, default: true]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+Table consents {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  type text [not null, note: 'pd_processing | marketing | ai_fallback']
+  doc_version text [not null]
+  granted_at timestamptz [not null, default: `now()`]
+  revoked_at timestamptz
+}
+
+Table auth_tokens {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  type text [not null, note: 'email_verify | password_reset']
+  token_hash text [not null, unique]
+  expires_at timestamptz [not null]
+  used_at timestamptz
+}
+
+Table sessions {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  refresh_token_hash text [not null, unique]
+  user_agent text
+  created_at timestamptz [not null, default: `now()`]
+  expires_at timestamptz [not null]
+  revoked_at timestamptz [note: '«выйти со всех устройств»']
+}
+
+// ============ 2. КОНТЕНТ ============
+
+Table professions {
+  id bigint [pk, increment]
+  slug text [not null, unique]
+  title text [not null]
+  description text
+  for_whom text [note: '«кому подходит»']
+  status text [not null, default: 'soon', note: 'available | soon | hidden']
+  sort_order int [not null, default: 0]
+  icon text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+Table blocks {
+  id bigint [pk, increment]
+  profession_id bigint [not null, ref: > professions.id]
+  title text [not null]
+  sort_order int [not null, default: 0]
+}
+
+Table topics {
+  id bigint [pk, increment]
+  slug text [not null, unique]
+  title text [not null]
+  description text
+  hours numeric(5,1) [not null, note: 'часы с нуля']
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Общая библиотека тем: Git, SQL, HTTP пишутся один раз'
+}
+
+Table block_topics {
+  block_id bigint [not null, ref: > blocks.id]
+  topic_id bigint [not null, ref: > topics.id]
+  sort_order int [not null, default: 0]
+  optional_for_junior boolean [not null, default: false]
+  indexes {
+    (block_id, topic_id) [pk]
+    topic_id
+  }
+}
+
+Table topic_prerequisites {
+  topic_id bigint [not null, ref: > topics.id]
+  prerequisite_id bigint [not null, ref: > topics.id]
+  indexes {
+    (topic_id, prerequisite_id) [pk]
+  }
+}
+
+Table skills {
+  id bigint [pk, increment]
+  name text [not null, unique]
+  status text [not null, default: 'new', note: 'new | in_review | verified (раздел 9.1)']
+  source text [not null, note: 'vacancies | manual']
+  reviewed_by bigint [ref: > users.id]
+  reviewed_at timestamptz
+  review_comment text
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table skill_synonyms {
+  id bigint [pk, increment]
+  skill_id bigint [not null, ref: > skills.id]
+  synonym citext [not null, unique, note: 'JS, JavaScript, ЯваСкрипт → один навык']
+}
+
+Table topic_skills {
+  topic_id bigint [not null, ref: > topics.id]
+  skill_id bigint [not null, ref: > skills.id]
+  indexes {
+    (topic_id, skill_id) [pk]
+    skill_id
+  }
+}
+
+Table profession_skills {
+  profession_id bigint [not null, ref: > professions.id]
+  skill_id bigint [not null, ref: > skills.id]
+  is_key boolean [not null, default: false, note: 'участвует в оценке навыков (15–25 на профессию)']
+  indexes {
+    (profession_id, skill_id) [pk]
+    skill_id
+  }
+}
+
+Table resources {
+  id bigint [pk, increment]
+  title text [not null]
+  url text [not null]
+  type text [not null, note: 'article | video | course | docs | practice']
+  language text [not null, default: 'ru']
+  is_free boolean [not null]
+  status text [not null, note: 'ai_suggested | approved | rejected | replaced']
+  replaced_by_id bigint [ref: > resources.id]
+  link_checked_at timestamptz
+  link_ok boolean
+  reviewed_by bigint [ref: > users.id]
+  reviewed_at timestamptz
+  review_comment text
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Пользователь видит только approved'
+}
+
+Table resource_skills {
+  resource_id bigint [not null, ref: > resources.id]
+  skill_id bigint [not null, ref: > skills.id]
+  indexes {
+    (resource_id, skill_id) [pk]
+    skill_id
+  }
+}
+
+Table topic_resources {
+  topic_id bigint [not null, ref: > topics.id]
+  resource_id bigint [not null, ref: > resources.id]
+  sort_order int [not null, default: 0]
+  indexes {
+    (topic_id, resource_id) [pk]
+  }
+}
+
+Table projects {
+  id bigint [pk, increment]
+  title text [not null]
+  description text
+  type text [not null, note: 'training | pet']
+  hours numeric(5,1)
+  difficulty smallint
+}
+
+Table project_topics {
+  project_id bigint [not null, ref: > projects.id]
+  topic_id bigint [not null, ref: > topics.id]
+  indexes {
+    (project_id, topic_id) [pk]
+  }
+}
+
+// ============ 3. ВАКАНСИИ ============
+
+Table vacancy_sources {
+  id bigint [pk, increment]
+  code text [not null, unique, note: 'superjob | trudvsem | telegram | hh']
+  name text [not null]
+  enabled boolean [not null, default: true]
+  settings jsonb
+}
+
+Table import_runs {
+  id bigint [pk, increment]
+  source_id bigint [not null, ref: > vacancy_sources.id]
+  started_at timestamptz [not null, default: `now()`]
+  finished_at timestamptz
+  status text [not null, note: 'running | ok | failed']
+  fetched int [default: 0]
+  inserted int [default: 0]
+  duplicates int [default: 0]
+  error text
+}
+
+Table vacancies {
+  id bigint [pk, increment]
+  source_id bigint [not null, ref: > vacancy_sources.id]
+  import_run_id bigint [ref: > import_runs.id]
+  external_id text [not null]
+  url text
+  title text [not null]
+  company text
+  region text
+  experience text [note: 'none | 1_3']
+  salary_from int
+  salary_to int
+  published_at timestamptz
+  raw_text text [note: 'храним 12 месяцев']
+  key_skills_raw jsonb
+  profession_id bigint [ref: > professions.id]
+  profession_status text [note: 'auto | review | confirmed']
+  dedup_hash text
+  duplicate_of_id bigint [ref: > vacancies.id]
+  fetched_at timestamptz [not null, default: `now()`]
+  indexes {
+    (source_id, external_id) [unique]
+    dedup_hash
+    (profession_id, published_at)
+  }
+}
+
+Table vacancy_skills {
+  vacancy_id bigint [not null, ref: > vacancies.id]
+  skill_id bigint [not null, ref: > skills.id]
+  matched_by text [not null, note: 'key_skills | text']
+  indexes {
+    (vacancy_id, skill_id) [pk]
+    skill_id
+  }
+}
+
+Table unknown_terms {
+  id bigint [pk, increment]
+  term citext [not null, unique]
+  occurrences int [not null, default: 1]
+  first_seen_at timestamptz [not null, default: `now()`]
+  last_seen_at timestamptz [not null, default: `now()`]
+  status text [not null, default: 'new', note: 'new | became_skill | became_synonym | ignored']
+  skill_id bigint [ref: > skills.id]
+  Note: 'Частые термины без навыка в справочнике → кандидаты в новые навыки'
+}
+
+Table weight_snapshots {
+  id bigint [pk, increment]
+  profession_id bigint [not null, ref: > professions.id]
+  period date [not null, note: 'первое число месяца']
+  vacancy_count int [not null]
+  salary_median int
+  status text [not null, default: 'draft', note: 'draft | published']
+  calculated_at timestamptz [not null, default: `now()`]
+  published_by bigint [ref: > users.id]
+  published_at timestamptz
+  indexes {
+    (profession_id, period) [unique]
+  }
+}
+
+Table skill_weights {
+  snapshot_id bigint [not null, ref: > weight_snapshots.id]
+  skill_id bigint [not null, ref: > skills.id]
+  weight numeric(5,4) [not null, note: 'доля вакансий с навыком; < 0,05 — не обязательный']
+  indexes {
+    (snapshot_id, skill_id) [pk]
+  }
+}
+
+// ============ 4. ПРОФОРИЕНТАЦИЯ И ОЦЕНКА ============
+
+Table career_questions {
+  id bigint [pk, increment]
+  question text [not null]
+  sort_order int [not null, default: 0]
+  active boolean [not null, default: true]
+}
+
+Table career_options {
+  id bigint [pk, increment]
+  question_id bigint [not null, ref: > career_questions.id]
+  label text [not null]
+  sort_order int [not null, default: 0]
+}
+
+Table career_option_scores {
+  option_id bigint [not null, ref: > career_options.id]
+  profession_id bigint [not null, ref: > professions.id]
+  points smallint [not null]
+  indexes {
+    (option_id, profession_id) [pk]
+  }
+  Note: 'Баллы скрыты от пользователя'
+}
+
+Table career_results {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  answers jsonb [not null, note: 'id выбранных вариантов']
+  top jsonb [not null, note: '[{profession_id, percent, reasons}] — топ-3']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table check_questions {
+  id bigint [pk, increment]
+  skill_id bigint [not null, ref: > skills.id]
+  question text [not null]
+  options jsonb [not null]
+  correct_option smallint [not null]
+  active boolean [not null, default: true]
+}
+
+Table assessments {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  profession_id bigint [not null, ref: > professions.id]
+  snapshot_id bigint [ref: > weight_snapshots.id, note: 'по каким весам считали']
+  status text [not null, note: 'in_progress | completed']
+  match_percent numeric(5,2)
+  started_at timestamptz [not null, default: `now()`]
+  completed_at timestamptz
+  indexes {
+    (user_id, profession_id, completed_at)
+  }
+  Note: 'Отчёт о разрыве считается из оценки и весов, отдельно не хранится'
+}
+
+Table assessment_answers {
+  assessment_id bigint [not null, ref: > assessments.id]
+  skill_id bigint [not null, ref: > skills.id]
+  self_level text [not null, note: 'none | basic | confident']
+  check_passed boolean
+  level numeric(2,1) [not null, note: '0 | 0.5 | 1']
+  indexes {
+    (assessment_id, skill_id) [pk]
+  }
+}
+
+Table user_skill_levels {
+  user_id bigint [not null, ref: > users.id]
+  skill_id bigint [not null, ref: > skills.id]
+  level numeric(2,1) [not null]
+  source text [not null, note: 'assessment | progress']
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (user_id, skill_id) [pk]
+  }
+  Note: 'Общий для всех профессий'
+}
+
+// ============ 5. ПЛАНЫ И ПРОГРЕСС ============
+
+Table plans {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  profession_id bigint [not null, ref: > professions.id]
+  status text [not null, note: 'active | needs_update | frozen | archived']
+  current_version_id bigint [ref: > plan_versions.id]
+  hours_per_week smallint [not null]
+  deadline date
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (user_id, profession_id) [unique]
+  }
+  Note: 'Количество планов не ограничено'
+}
+
+Table plan_versions {
+  id bigint [pk, increment]
+  plan_id bigint [not null, ref: > plans.id]
+  version_no int [not null]
+  built_by text [not null, note: 'ai | algorithm']
+  model text
+  prompt_version text
+  snapshot_id bigint [ref: > weight_snapshots.id]
+  assessment_id bigint [ref: > assessments.id]
+  match_before numeric(5,2)
+  match_after numeric(5,2)
+  total_hours numeric(6,1)
+  ready_date date
+  ai_explanation text
+  ai_raw jsonb
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (plan_id, version_no) [unique]
+  }
+}
+
+Table plan_items {
+  id bigint [pk, increment]
+  plan_version_id bigint [not null, ref: > plan_versions.id]
+  sort_order int [not null]
+  item_type text [not null, note: 'topic | project']
+  topic_id bigint [ref: > topics.id]
+  project_id bigint [ref: > projects.id]
+  week_no smallint
+  hours numeric(5,1)
+  status text [not null, note: 'to_learn | known | optional']
+  ai_note text
+  indexes {
+    (plan_version_id, sort_order)
+  }
+}
+
+Table topic_progress {
+  user_id bigint [not null, ref: > users.id]
+  topic_id bigint [not null, ref: > topics.id]
+  studied_at timestamptz [not null, default: `now()`]
+  indexes {
+    (user_id, topic_id) [pk]
+  }
+  Note: '«Изучено» — общее для базового roadmap и всех планов'
+}
+
+Table ai_requests {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  plan_version_id bigint [ref: > plan_versions.id]
+  purpose text [not null, note: 'plan | resource_suggest']
+  model text [not null]
+  tokens_in int
+  tokens_out int
+  cost_rub numeric(10,4)
+  status text [not null, note: 'ok | error | limit']
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (user_id, created_at)
+  }
+  Note: 'Дневной лимит и расчёт стоимости ИИ'
+}
+
+// ============ 6. ДЕНЬГИ ============
+
+Table subscriptions {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  status text [not null, note: 'pending | active | past_due | canceled | frozen']
+  price_rub int [not null]
+  period_start timestamptz
+  period_end timestamptz
+  auto_renew boolean [not null, default: true]
+  source text [not null, note: 'payment | promo']
+  promo_code_id bigint [ref: > promo_codes.id]
+  provider text
+  provider_subscription_id text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (user_id, status)
+  }
+}
+
+Table payments {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id, note: 'обнуляется при удалении аккаунта']
+  subscription_id bigint [ref: > subscriptions.id]
+  amount_rub int [not null]
+  status text [not null, note: 'pending | succeeded | failed | refunded']
+  method text [note: 'sbp | card']
+  provider text [not null]
+  provider_payment_id text [unique]
+  receipt_url text
+  created_at timestamptz [not null, default: `now()`]
+  paid_at timestamptz
+}
+
+Table promo_codes {
+  id bigint [pk, increment]
+  code citext [not null, unique]
+  type text [not null, note: 'percent | free_days']
+  value int [not null]
+  max_activations int
+  valid_from timestamptz
+  valid_to timestamptz
+  active boolean [not null, default: true]
+  comment text
+  Note: 'Временное решение для пилота'
+}
+
+Table promo_activations {
+  promo_code_id bigint [not null, ref: > promo_codes.id]
+  user_id bigint [not null, ref: > users.id]
+  subscription_id bigint [ref: > subscriptions.id]
+  activated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (promo_code_id, user_id) [pk]
+  }
+}
+
+// ============ 7. ПРОЧЕЕ ============
+
+Table waitlist {
+  id bigint [pk, increment]
+  profession_id bigint [not null, ref: > professions.id]
+  email citext [not null]
+  user_id bigint [ref: > users.id]
+  created_at timestamptz [not null, default: `now()`]
+  notified_at timestamptz
+  indexes {
+    (profession_id, email) [unique]
+  }
+  Note: '«Сообщить о запуске»'
+}
+
+Table feedback {
+  id bigint [pk, increment]
+  type text [not null, note: 'contact_form | resource_report']
+  user_id bigint [ref: > users.id]
+  email citext
+  topic_id bigint [ref: > topics.id]
+  resource_id bigint [ref: > resources.id]
+  message text [not null]
+  status text [not null, default: 'new', note: 'new | in_progress | closed']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table ratings {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  target_type text [not null, note: 'report | plan']
+  assessment_id bigint [ref: > assessments.id]
+  plan_version_id bigint [ref: > plan_versions.id]
+  score smallint [not null, note: '1–5']
+  learned_new boolean [note: '«Узнали что-то новое?»']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table email_log {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  type text [not null]
+  status text [not null, note: 'sent | failed']
+  sent_at timestamptz [not null, default: `now()`]
+}
+
+Table events {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  session_key text
+  name text [not null]
+  props jsonb
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (name, created_at)
+  }
+  Note: 'События аналитики; партиционирование по месяцам'
+}
+
+Table audit_log {
+  id bigint [pk, increment]
+  admin_id bigint [not null, ref: > users.id]
+  entity text [not null]
+  entity_id bigint
+  action text [not null, note: 'create | update | delete | publish']
+  diff jsonb
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table settings {
+  key text [pk]
+  value jsonb [not null]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Цена подписки, лимиты ИИ, тексты писем'
+}
+
+// ============ ГРУППЫ ДЛЯ ДИАГРАММЫ ============
+
+TableGroup account {
+  users
+  user_profiles
+  consents
+  auth_tokens
+  sessions
+}
+TableGroup content {
+  professions
+  blocks
+  topics
+  block_topics
+  topic_prerequisites
+  skills
+  skill_synonyms
+  topic_skills
+  profession_skills
+  resources
+  resource_skills
+  topic_resources
+  projects
+  project_topics
+}
+TableGroup vacancies_group {
+  vacancy_sources
+  import_runs
+  vacancies
+  vacancy_skills
+  unknown_terms
+  weight_snapshots
+  skill_weights
+}
+TableGroup tests {
+  career_questions
+  career_options
+  career_option_scores
+  career_results
+  check_questions
+  assessments
+  assessment_answers
+  user_skill_levels
+}
+TableGroup learning {
+  plans
+  plan_versions
+  plan_items
+  topic_progress
+  ai_requests
+}
+TableGroup money {
+  subscriptions
+  payments
+  promo_codes
+  promo_activations
+}
+TableGroup misc {
+  waitlist
+  feedback
+  ratings
+  email_log
+  events
+  audit_log
+  settings
+}

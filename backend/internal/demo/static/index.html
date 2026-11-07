@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Карьерный навигатор IT — демо</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1d2330; --muted: #6b7385; --line: #e3e6ec;
+    --accent: #2f6fed; --accent-soft: #e8f0fe; --ok: #1f9d55; --ok-soft: #e6f6ed; --warn: #b7791f; --warn-soft: #fdf5e6;
+    --danger: #c53030;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { background: var(--card); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 960px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 16px; }
+  .logo { font-weight: 700; font-size: 17px; color: var(--text); }
+  .badge { font-size: 12px; background: var(--warn-soft); color: var(--warn); padding: 2px 8px; border-radius: 99px; }
+  .spacer { flex: 1; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 28px 0 12px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .prof { display: flex; flex-direction: column; gap: 6px; color: inherit; }
+  .prof:hover { border-color: var(--accent); text-decoration: none; }
+  .prof.soon { opacity: .6; pointer-events: none; }
+  .prof h3 { margin: 0; font-size: 17px; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); width: fit-content; }
+  .tag.soon { background: var(--line); color: var(--muted); }
+  button, .btn { font: inherit; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  form { display: grid; gap: 10px; max-width: 360px; }
+  input[type=email], input[type=password], input[type=text] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; width: 100%; }
+  label.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .error { color: var(--danger); font-size: 14px; min-height: 1em; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
+  .progress > div { height: 100%; background: var(--ok); transition: width .3s; }
+  .block { margin-top: 14px; }
+  .block h3 { margin: 0 0 8px; font-size: 16px; }
+  .topic { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .topic:first-of-type { border-top: 0; }
+  .topic input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--ok); flex: none; }
+  .topic.done .t-title { color: var(--ok); }
+  .t-title { font-weight: 600; }
+  .t-meta { font-size: 13px; color: var(--muted); }
+  .res { font-size: 13px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .match { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start; }
+  .percent { font-size: 44px; font-weight: 800; line-height: 1; color: var(--accent); }
+  .note { font-size: 13px; background: var(--warn-soft); color: var(--warn); padding: 6px 10px; border-radius: 8px; margin-top: 8px; }
+  .miss { padding: 8px 0; border-top: 1px solid var(--line); }
+  .miss:first-child { border-top: 0; }
+  .miss .w { font-size: 13px; color: var(--muted); }
+  .wbar { height: 6px; background: var(--accent-soft); border-radius: 99px; margin: 4px 0; }
+  .wbar > div { height: 100%; background: var(--accent); border-radius: 99px; }
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+  .sticky { position: sticky; top: 16px; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .sticky { position: static; } .match { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="logo" href="#/">Карьерный навигатор IT</a>
+    <span class="badge">демо API, не фронтенд продукта</span>
+    <span class="spacer"></span>
+    <span id="user" class="muted"></span>
+  </div>
+</header>
+<main id="app"></main>
+
+<script>
+"use strict";
+const API = "/api/v1";
+const app = document.getElementById("app");
+let me = null;
+
+// --- общие помощники ---
+async function api(method, path, body) {
+  const res = await fetch(API + path, {
+    method, credentials: "include",
+    headers: body ? { "Content-Type": "application/json" } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = res.status === 204 ? null : await res.json().catch(() => null);
+  if (!res.ok) throw Object.assign(new Error(data?.error?.message || "Ошибка " + res.status), { status: res.status, data });
+  return data;
+}
+function h(tag, attrs = {}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of children.flat()) if (c != null) el.append(c.nodeType ? c : String(c));
+  return el;
+}
+const pct = (w) => Math.round(w * 100) + "%";
+const safeUrl = (u) => /^https?:\/\//.test(u) ? u : "#";
+
+// --- шапка ---
+function renderUser() {
+  const box = document.getElementById("user");
+  box.replaceChildren();
+  if (me) {
+    box.append(me.name + " · ", h("button", { class: "ghost", onclick: logout }, "Выйти"));
+  } else {
+    box.append(h("a", { href: "#/login" }, "Войти"));
+  }
+}
+async function logout() {
+  await api("POST", "/auth/logout");
+  me = null; renderUser(); location.hash = "#/";  route();
+}
+
+// --- вход и регистрация ---
+function renderAuth(mode = "register") {
+  const err = h("div", { class: "error" });
+  const isReg = mode === "register";
+  const form = h("form", { onsubmit: async (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      err.textContent = "";
+      try {
+        me = isReg
+          ? await api("POST", "/auth/register", {
+              email: f.get("email"), password: f.get("password"), name: f.get("name"),
+              consent_pd: f.get("consent_pd") === "on",
+            })
+          : await api("POST", "/auth/login", { email: f.get("email"), password: f.get("password") });
+        renderUser(); location.hash = sessionStorage.getItem("back") || "#/"; sessionStorage.removeItem("back");
+      } catch (e) {
+        const fields = e.data?.error?.fields;
+        err.textContent = fields ? Object.values(fields).join(". ") : e.message;
+      }
+    } },
+    isReg ? h("input", { name: "name", type: "text", placeholder: "Имя", required: true }) : null,
+    h("input", { name: "email", type: "email", placeholder: "Почта", required: true, autocomplete: "email" }),
+    h("input", { name: "password", type: "password", placeholder: isReg ? "Пароль (от 8 символов)" : "Пароль", required: true,
+      autocomplete: isReg ? "new-password" : "current-password" }),
+    isReg ? h("label", { class: "check" }, h("input", { type: "checkbox", name: "consent_pd" }),
+      "Согласен на обработку персональных данных") : null,
+    err,
+    h("button", { type: "submit" }, isReg ? "Зарегистрироваться" : "Войти"),
+  );
+  app.replaceChildren(
+    h("h1", {}, isReg ? "Регистрация" : "Вход"),
+    h("div", { class: "tabs" },
+      h("button", { class: isReg ? "" : "ghost", onclick: () => renderAuth("register") }, "Регистрация"),
+      h("button", { class: isReg ? "ghost" : "", onclick: () => renderAuth("login") }, "Вход")),
+    h("div", { class: "card" }, form),
+  );
+}
+
+// --- каталог ---
+async function renderCatalog() {
+  const { items } = await api("GET", "/professions");
+  app.replaceChildren(
+    h("h1", {}, "Каталог профессий"),
+    h("p", { class: "muted" }, "Выберите профессию: roadmap по блокам и темам, отметки «Изучено» и процент соответствия вакансиям."),
+    h("div", { class: "grid" }, items.map((p) =>
+      h("a", { class: "card prof" + (p.status === "soon" ? " soon" : ""), href: "#/p/" + encodeURIComponent(p.slug) },
+        h("span", { class: "tag" + (p.status === "soon" ? " soon" : "") }, p.status === "soon" ? "скоро" : "доступно"),
+        h("h3", {}, p.title),
+        h("div", { class: "muted" }, p.description || ""),
+        h("div", { class: "t-meta" }, `${p.blocks_count} блоков · ${p.topics_count} тем`)))),
+  );
+}
+
+// --- карточка профессии ---
+async function renderProfession(slug) {
+  const p = await api("GET", "/professions/" + encodeURIComponent(slug));
+  const progressBox = h("div");
+  const matchBox = h("div", { class: "card" });
+
+  const drawProgress = () => {
+    progressBox.replaceChildren();
+    if (!p.progress) {
+      progressBox.append(h("p", { class: "muted" }, h("a", { href: "#/login", onclick: () => sessionStorage.setItem("back", location.hash) }, "Войдите"),
+        ", чтобы отмечать изученные темы и видеть процент соответствия вакансиям."));
+      return;
+    }
+    const share = p.progress.total ? p.progress.studied / p.progress.total : 0;
+    progressBox.append(h("div", { class: "t-meta" }, `Изучено ${p.progress.studied} из ${p.progress.total} тем`),
+      h("div", { class: "progress" }, h("div", { style: `width:${share * 100}%` })));
+  };
+
+  const onToggle = async (topic, input) => {
+    input.disabled = true;
+    try {
+      await api(input.checked ? "PUT" : "DELETE", `/topics/${topic.id}/progress`);
+      // Тема может стоять в нескольких блоках — обновляем все её отметки.
+      const fresh = await api("GET", "/professions/" + encodeURIComponent(slug));
+      p.progress = fresh.progress; p.blocks = fresh.blocks;
+      drawBlocks(); drawProgress(); drawMatch();
+    } catch (e) { input.checked = !input.checked; alert(e.message); }
+    input.disabled = false;
+  };
+
+  const blocksBox = h("div");
+  const drawBlocks = () => blocksBox.replaceChildren(...p.blocks.map((b, i) =>
+    h("div", { class: "card block" },
+      h("h3", {}, `${i + 1}. ${b.title}`),
+      b.topics.map((t) => {
+        const input = h("input", { type: "checkbox", checked: t.studied, disabled: !p.progress, title: "Изучено" });
+        input.addEventListener("change", () => onToggle(t, input));
+        return h("div", { class: "topic" + (t.studied ? " done" : "") },
+          input,
+          h("div", {},
+            h("div", { class: "t-title" }, t.title, t.optional ? h("span", { class: "t-meta" }, " · необязательно для junior") : null),
+            h("div", { class: "t-meta" }, `${t.description || ""} · ≈${t.hours} ч`),
+            h("div", { class: "res" }, t.resources.map((r) =>
+              h("a", { href: safeUrl(r.url), target: "_blank", rel: "noopener noreferrer" }, `${r.title} (${r.type}, ${r.language})`)))));
+      }))));
+
+  const drawMatch = async () => {
+    matchBox.replaceChildren(h("h3", { style: "margin:0 0 10px" }, "Соответствие вакансиям"));
+    if (!me) { matchBox.append(h("p", { class: "muted" }, "Доступно после входа.")); return; }
+    let m;
+    try { m = await api("GET", `/professions/${encodeURIComponent(slug)}/match`); }
+    catch (e) { matchBox.append(h("p", { class: "error" }, e.message)); return; }
+    if (!m.snapshot) {
+      matchBox.append(h("p", { class: "muted" }, "Данные о вакансиях по этой профессии ещё собираются. Процент появится после первой загрузки вакансий."));
+      return;
+    }
+    matchBox.append(
+      h("div", { class: "percent" }, m.percent + "%"),
+      h("div", { class: "t-meta" }, `Закрыто ${m.key_skills_covered} из ${m.key_skills_total} ключевых навыков · ${m.snapshot.vacancy_count} вакансий, ${m.snapshot.period}`),
+      m.snapshot.preliminary ? h("div", { class: "note" }, "Предварительные данные: вакансий меньше 200.") : null,
+      m.missing.length ? h("h4", { style: "margin:16px 0 4px" }, "Чего не хватает больше всего") : null,
+      m.missing.map((s) => h("div", { class: "miss" },
+        h("div", {}, h("b", {}, s.name), s.level ? h("span", { class: "t-meta" }, " · частично") : null),
+        h("div", { class: "wbar" }, h("div", { style: `width:${s.weight * 100}%` })),
+        h("div", { class: "w" }, `Нужен в ${pct(s.weight)} вакансий. Темы: ${s.topics.map((t) => t.title + (t.studied ? " ✓" : "")).join(", ") || "—"}`))),
+    );
+  };
+
+  app.replaceChildren(
+    h("p", {}, h("a", { href: "#/" }, "← Каталог")),
+    h("h1", {}, p.title),
+    h("p", { class: "muted" }, p.description || ""),
+    p.for_whom ? h("p", {}, h("b", {}, "Кому подходит: "), p.for_whom) : null,
+    h("div", { class: "layout" },
+      h("div", {}, progressBox, blocksBox),
+      h("div", { class: "sticky" }, matchBox)),
+  );
+  drawProgress(); drawBlocks(); drawMatch();
+}
+
+// --- маршруты ---
+async function route() {
+  const hash = location.hash || "#/";
+  try {
+    if (hash === "#/login") return renderAuth(me ? "login" : "register");
+    const m = hash.match(/^#\/p\/(.+)$/);
+    if (m) return await renderProfession(decodeURIComponent(m[1]));
+    return await renderCatalog();
+  } catch (e) {
+    app.replaceChildren(h("h1", {}, e.status === 404 ? "Не найдено" : "Ошибка"), h("p", { class: "error" }, e.message),
+      h("a", { href: "#/" }, "← В каталог"));
+  }
+}
+
+window.addEventListener("hashchange", route);
+(async () => {
+  try { me = await api("GET", "/me"); } catch { me = null; }
+  renderUser(); route();
+})();
+</script>
+</body>
+</html>

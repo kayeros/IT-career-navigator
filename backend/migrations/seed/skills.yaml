@@ -1,0 +1,64 @@
+# ЧЕРНОВИК. Справочник навыков: name — как показываем, synonyms — как пишут в вакансиях.
+# Название навыка в синонимах не повторяем: оно учитывается при поиске само.
+skills:
+  # Общие
+  - {name: Git, synonyms: [гит, github, gitlab, гитхаб, гитлаб, bitbucket]}
+  - {name: SQL, synonyms: [эскуэль, sql-запросы, запросы sql]}
+  - {name: PostgreSQL, synonyms: [postgres, постгрес, постгре, pgsql, psql]}
+  - {name: Linux, synonyms: [линукс, unix, ubuntu, bash]}
+  - {name: HTTP, synonyms: [https, http/https, протокол http]}
+  - {name: REST API, synonyms: [rest, restful, restful api, рест апи]}
+  - {name: Docker, synonyms: [докер, docker-compose, docker compose, контейнеризация]}
+  - {name: CI/CD, synonyms: [ci cd, gitlab ci, github actions, jenkins]}
+  - {name: ООП, synonyms: [oop, объектно-ориентированное программирование, объектно ориентированное программирование]}
+  # Тестирование
+  - {name: Теория тестирования, synonyms: [основы тестирования, виды тестирования, уровни тестирования, istqb]}
+  - {name: Тест-дизайн, synonyms: [техники тест-дизайна, test design, тест дизайн]}
+  - {name: Тест-кейсы, synonyms: [тест кейсы, test case, test cases, тесткейсы]}
+  - {name: Чек-листы, synonyms: [чек листы, чеклисты, checklist, checklists]}
+  - {name: Баг-репорты, synonyms: [баг репорты, bug report, bug reports, багрепорты, дефект-репорты]}
+  - {name: Agile, synonyms: [аджайл, гибкие методологии]}
+  - {name: Scrum, synonyms: [скрам]}
+  - {name: Jira, synonyms: [джира, жира]}
+  - {name: TestRail, synonyms: [test rail, qase, testit, test it, allure testops]}
+  - {name: Chrome DevTools, synonyms: [devtools, dev tools, инструменты разработчика, панель разработчика]}
+  - {name: Charles, synonyms: [charles proxy, fiddler, сниффер, снифферы, proxyman]}
+  - {name: HTML, synonyms: [html5, хтмл]}
+  - {name: CSS, synonyms: [css3]}
+  - {name: Клиент-серверная архитектура, synonyms: [клиент-сервер, клиент серверная архитектура, клиент-серверное взаимодействие]}
+  - {name: Postman, synonyms: [постман, swagger, insomnia]}
+  - {name: JSON, synonyms: [джейсон]}
+  - {name: XML, synonyms: [xsd]}
+  - {name: Мобильное тестирование, synonyms: [тестирование мобильных приложений, mobile testing, тестирование ios, тестирование android]}
+  - {name: ADB, synonyms: [android debug bridge, android studio, xcode]}
+  - {name: Автотесты, synonyms: [автотестирование, автоматизация тестирования, selenium, playwright, test automation]}
+  # Python
+  - {name: Python, synonyms: [питон, пайтон, python3, python 3]}
+  - {name: Poetry, synonyms: [pip, venv, virtualenv, uv]}
+  - {name: pytest, synonyms: [unittest, пайтест]}
+  - {name: SQLAlchemy, synonyms: [sql alchemy, алхимия]}
+  - {name: Alembic, synonyms: [алембик]}
+  - {name: Redis, synonyms: [редис]}
+  - {name: FastAPI, synonyms: [fast api, фастапи]}
+  - {name: Django, synonyms: [джанго]}
+  - {name: Django REST Framework, synonyms: [drf, django rest]}
+  - {name: Flask, synonyms: [фласк]}
+  - {name: asyncio, synonyms: [асинхронное программирование, async/await, aiohttp, асинхронность]}
+  - {name: Celery, synonyms: [селери]}
+  # Java
+  - {name: Java, synonyms: [джава, java core, java se, java 17, java 21]}
+  - {name: Java Collections, synonyms: [collections framework, коллекции java, коллекции]}
+  - {name: Stream API, synonyms: [java stream, streams api]}
+  - {name: Многопоточность, synonyms: [multithreading, concurrency, java concurrency]}
+  - {name: Maven, synonyms: [мавен]}
+  - {name: Gradle, synonyms: [градл]}
+  - {name: JUnit, synonyms: [junit5, junit 5, джейюнит]}
+  - {name: Mockito, synonyms: [мокито]}
+  - {name: JDBC, synonyms: [spring jdbc]}
+  - {name: Hibernate, synonyms: [jpa, хибернейт, spring orm]}
+  - {name: Миграции БД, synonyms: [liquibase, flyway, ликвибейс]}
+  - {name: Spring Framework, synonyms: [spring, спринг, spring core, spring mvc]}
+  - {name: Spring Boot, synonyms: [springboot, спринг бут]}
+  - {name: Spring Data, synonyms: [spring data jpa]}
+  - {name: Spring Security, synonyms: [спринг секьюрити]}
+  - {name: Kafka, synonyms: [apache kafka, кафка, rabbitmq, брокеры сообщений]}
